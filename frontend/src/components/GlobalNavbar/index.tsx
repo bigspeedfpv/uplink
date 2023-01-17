@@ -26,7 +26,7 @@ const links = [
 
 function GlobalNavbar() {
   return (
-    <Navbar width={{ base: 230 }} p="xs">
+    <Navbar width={{ base: 250 }} p="xs">
       <Navbar.Section mt="xs">
         <Brand />
       </Navbar.Section>

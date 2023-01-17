@@ -1,10 +1,16 @@
-# WORK IN PROGRESS
-
 <img src="./.github/assets/logo-full.svg" height="80" alt="Uplink Logo" />
 
 ---
 
-Uplink is an unofficial firmware flasher and SD card content manager for EdgeTX. Uplink is not affiliated with EdgeTX. **USE AT YOUR OWN RISK!**
+## UPLINK IS STILL A WORK IN PROGRESS. Expect things to be broken or missing. Do not use this to update any radios you care about until it is stable!
+
+Uplink is an unofficial firmware flasher and SD card content manager for EdgeTX. It aims to be at feature parity with official EdgeTX tools, such as Flasher and/or Buddy.
+
+Uplink is **NOT** affiliated with [EdgeTX](https://github.com/edgetx). It is not intended to be a replacement for official tools; it is just a passion project. While Uplink should mostly be stable (I am building it mainly for personal use), it may still have bugs. **I am not responsible for anything that happens to your radio as a result of using Uplink, but I am willing to help troubleshoot issues if any do arise.**
+
+### Prebuilt Binaries
+
+Prebuilt binaries will be released as Uplink becomes more finished. For now, refer to the Development section to build Uplink yourself.
 
 ## Features
 
@@ -28,3 +34,13 @@ wails dev
 ```
 
 The app should open and the development server will be available at http://localhost:34115.
+
+### Building
+
+To build Uplink, first install dependencies as outlined in the Development secion. Then, run:
+
+```bash
+wails build -ldflags "-X 'main.version=<version>'"
+```
+
+where `<version>` is your desired version tag. If `main.version` is not provided, the version will default to `develop`.
