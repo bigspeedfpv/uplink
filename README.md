@@ -1,7 +1,9 @@
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./.github/assets/logo-full-dark.svg">
-    <img src="./.github/assets/logo-full-light.svg" height="80" alt="Uplink Logo" />
-</picture>
+<center>
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="./.github/assets/logo-full-dark.svg">
+        <img src="./.github/assets/logo-full-light.svg" height="80" alt="Uplink Logo" />
+    </picture>
+</center>
 
 ---
 
