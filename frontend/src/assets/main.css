@@ -1,7 +1,6 @@
-html {
+*, *::after, *::before {
   user-select: none;
-}
-
-img {
-  pointer-events: none;
+  -webkit-user-drag: none;
+  -webkit-app-region: no-drag;
+  cursor: default;
 }

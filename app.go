@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var version = "develop"
+
 // App struct
 type App struct {
 	ctx context.Context
@@ -24,4 +26,8 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) GetVersion() string {
+	return version
 }

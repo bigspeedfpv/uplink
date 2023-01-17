@@ -25,13 +25,6 @@
     "react-router-dom": "^6.6.2"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^7.0.0-beta.28",
-    "@storybook/addon-interactions": "^7.0.0-beta.28",
-    "@storybook/addon-links": "^7.0.0-beta.28",
-    "@storybook/blocks": "^7.0.0-beta.28",
-    "@storybook/react": "^7.0.0-beta.28",
-    "@storybook/react-vite": "^7.0.0-beta.28",
-    "@storybook/testing-library": "^0.0.13",
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
@@ -47,7 +40,6 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.6.10",
     "prop-types": "^15.8.1",
-    "storybook": "^7.0.0-beta.28",
     "typescript": "^4.6.4",
     "vite": "^4.0.4"
   }

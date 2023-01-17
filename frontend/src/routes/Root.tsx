@@ -1,30 +1,28 @@
 import React from "react";
 
-import { AppShell, MantineProvider, Text } from "@mantine/core";
+import { AppShell, MantineProvider } from "@mantine/core";
 import GlobalNavbar from "../components/GlobalNavbar";
+import { theme } from "../theme";
+import { Outlet } from "react-router-dom";
+import { VersionProvider } from "../context/version.context";
 
 function Root() {
   return (
-    <MantineProvider
-      theme={{ colorScheme: "dark" }}
-      withGlobalStyles
-      withNormalizeCSS
-    >
-      <AppShell
-        padding="md"
-        navbar={<GlobalNavbar />}
-        styles={(theme) => ({
-          main: {
-            backgroundColor:
-              theme.colorScheme === "dark"
-                ? theme.colors.dark[8]
-                : theme.colors.gray[0],
-          },
-        })}
-      >
-        <Text>Hello World!</Text>
-      </AppShell>
-    </MantineProvider>
+    <VersionProvider>
+      <MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
+        <AppShell
+          padding="md"
+          navbar={<GlobalNavbar />}
+          styles={(theme) => ({
+            main: {
+              backgroundColor: theme.colors.dark[8],
+            },
+          })}
+        >
+          <Outlet />
+        </AppShell>
+      </MantineProvider>
+    </VersionProvider>
   );
 }
 
