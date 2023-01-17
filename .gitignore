@@ -91,9 +91,6 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-build/bin
-node_modules
-frontend/dist
 # Logs
 logs
 *.log
@@ -224,3 +221,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Wails
+build/
+node_modules
+frontend/dist
