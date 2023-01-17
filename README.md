@@ -1,19 +1,30 @@
-# README
+# WORK IN PROGRESS
 
-## About
+<img src="./.github/assets/logo-full.svg" height="80" alt="Uplink Logo" />
 
-This is the official Wails React-TS template.
+---
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+Uplink is an unofficial firmware flasher and SD card content manager for EdgeTX. Uplink is not affiliated with EdgeTX. **USE AT YOUR OWN RISK!**
 
-## Live Development
+## Features
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+- Easily flash EdgeTX firmware to your radio or update your radio's firmware
+- Quickly select language packs and scripts to be installed on your radio's SD card
 
-## Building
+---
 
-To build a redistributable, production mode package, use `wails build`.
+## Development
+
+Uplink is built with [Wails](https://wails.app/) and [React](https://reactjs.org/). To get started, first ensure you have working Go (^1.18) and Node.js (^16) environments. Then, clone the repository and install the Node dependencies:
+
+```bash
+cd frontend && npm i
+```
+
+Then, you should be ready to start developing. To start the development server, change back to the project's root directory and run:
+
+```bash
+wails dev
+```
+
+The app should open and the development server will be available at http://localhost:34115.
