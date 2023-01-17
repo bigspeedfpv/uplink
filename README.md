@@ -1,9 +1,11 @@
-<center>
+<p align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="./.github/assets/logo-full-dark.svg">
         <img src="./.github/assets/logo-full-light.svg" height="80" alt="Uplink Logo" />
     </picture>
-</center>
+</p>
+
+[![Download](https://img.shields.io/github/downloads/bigspeedfpv/uplink/total?style=for-the-badge)](https://github.com/bigspeedfpv/uplink/releases) [![Last Commit](https://img.shields.io/github/last-commit/bigspeedfpv/uplink?style=for-the-badge)](https://github.com/bigspeedfpv/uplink/commits/) ![Go](https://img.shields.io/github/go-mod/go-version/bigspeedfpv/uplink?style=for-the-badge)
 
 ---
 
