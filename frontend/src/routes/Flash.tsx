@@ -28,7 +28,6 @@ function Flash() {
   React.useEffect(() => {
     FetchReleases().then((r) => {
       setFetchedReleases(r);
-      console.log(r);
     });
   }, []);
 
@@ -104,7 +103,7 @@ function Flash() {
                     <Text size={25} weight="bold">
                       EdgeTX {fwVersion!.value} Release Notes
                     </Text>
-                    <Badge>Latest</Badge>
+                    {fwVersion?.latest && <Badge>Latest</Badge>}
                   </Group>
                   <ReactMarkdown children={fwVersion!.releaseNotes} />
                 </Card>
@@ -148,7 +147,18 @@ interface FwItemProps
     models.ReleaseMeta {}
 
 const FwItem = React.forwardRef<HTMLDivElement, FwItemProps>(
-  ({ value, codename, latest, ...others }: FwItemProps, ref) => (
+  (
+    {
+      value,
+      codename,
+      latest,
+      releaseNotes,
+      browserDownloadUrl,
+      date,
+      ...others
+    }: FwItemProps,
+    ref
+  ) => (
     <div ref={ref} {...others}>
       <Group noWrap>
         <Text>

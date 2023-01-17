@@ -2,8 +2,8 @@ package main
 
 // FetchedReleases represents an array of release metadata along with an error status.
 type FetchedReleases struct {
-	Error    FetchedReleasesError `json:"error,omitempty"`
-	Releases []ReleaseMeta        `json:"releases"`
+	Error    *FetchedReleasesError `json:"error,omitempty"`
+	Releases []ReleaseMeta         `json:"releases"`
 }
 
 type FetchedReleasesError struct {

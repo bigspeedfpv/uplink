@@ -46,7 +46,7 @@ func (a *App) FetchReleases() FetchedReleases {
 
 	releases, _, err := client.Repositories.ListReleases(context.Background(), "EdgeTX", "edgetx", nil)
 	if err != nil {
-		fetchedReleases.Error = FetchedReleasesError{Message: err.Error()}
+		fetchedReleases.Error = &FetchedReleasesError{Message: err.Error()}
 		return fetchedReleases
 	}
 
