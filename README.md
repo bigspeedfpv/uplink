@@ -1,4 +1,7 @@
-<img src="./.github/assets/logo-full.svg" height="80" alt="Uplink Logo" />
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./.github/assets/logo-full-dark.svg">
+    <img src="./.github/assets/logo-full-light.svg" height="80" alt="Uplink Logo" />
+</picture>
 
 ---
 
@@ -16,8 +19,6 @@ Prebuilt binaries will be released as Uplink becomes more finished. For now, ref
 
 - Easily flash EdgeTX firmware to your radio or update your radio's firmware
 - Quickly select language packs and scripts to be installed on your radio's SD card
-
----
 
 ## Development
 
