@@ -1,6 +1,6 @@
 import { Navbar } from "@mantine/core";
 import Brand from "./Brand";
-import { IconHome, IconDownload, IconDeviceSdCard } from "@tabler/icons";
+import { IconHome, IconDeviceGamepad2, IconDeviceSdCard } from "@tabler/icons";
 import Link from "./Link";
 
 const links = [
@@ -8,10 +8,10 @@ const links = [
     icon: <IconHome size={20} />,
     color: "blue",
     label: "Welcome",
-    to: "/welcome",
+    to: "/",
   },
   {
-    icon: <IconDownload size={20} />,
+    icon: <IconDeviceGamepad2 size={20} />,
     color: "cyan",
     label: "Flash EdgeTX",
     to: "/flash",
