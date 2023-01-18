@@ -1,12 +1,20 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
 	"strings"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/exp/slices"
+	"golang.org/x/oauth2"
 )
 
 var version = "develop"
@@ -41,12 +49,24 @@ func (a *App) GetVersion() string {
 func (a *App) FetchReleases() FetchedReleases {
 	// Initialize the struct we will return
 	var fetchedReleases FetchedReleases
+	var client *github.Client
 
-	client := github.NewClient(nil)
+	ctx := context.Background()
 
-	releases, _, err := client.Repositories.ListReleases(context.Background(), "EdgeTX", "edgetx", nil)
+	token := os.Getenv("UPLINK_OAUTH_TOKEN")
+
+	if token == "" {
+		client = github.NewClient(nil)
+	} else {
+		ts := oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+		client = github.NewClient(oauth2.NewClient(ctx, ts))
+	}
+
+	releases, _, err := client.Repositories.ListReleases(ctx, "EdgeTX", "edgetx", nil)
 	if err != nil {
-		fetchedReleases.Error = &FetchedReleasesError{Message: err.Error()}
+		fetchedReleases.Error = &ErrorWrapper{Message: err.Error()}
 		return fetchedReleases
 	}
 
@@ -75,4 +95,62 @@ func (a *App) FetchReleases() FetchedReleases {
 	}
 
 	return fetchedReleases
+}
+
+// FetchTargets downloads the firmware artifact from the selected version, saves it, and returns the target list.
+func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
+	var targets FetchedTargets
+
+	resp, err := http.Get(release.BrowserDownloadUrl)
+	if err != nil {
+		targets.Error = &ErrorWrapper{Message: err.Error()}
+		return targets
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		targets.Error = &ErrorWrapper{Message: err.Error()}
+		return targets
+	}
+
+	read, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
+	if err != nil {
+		targets.Error = &ErrorWrapper{Message: err.Error()}
+		return targets
+	}
+
+	for _, file := range read.File {
+		if file.Name == "fw.json" {
+			fwIdx, err := file.Open()
+			if err != nil {
+				targets.Error = &ErrorWrapper{Message: err.Error()}
+				return targets
+			}
+
+			fwIdxRead, err := ioutil.ReadAll(fwIdx)
+			if err != nil {
+				targets.Error = &ErrorWrapper{Message: err.Error()}
+			}
+
+			var fetchedTargetList targetsMeta
+
+			json.Unmarshal(fwIdxRead, &fetchedTargetList)
+
+			for _, target := range fetchedTargetList.Targets {
+				targets.Targets = append(targets.Targets, Target{
+					Label:  target[0],
+					Value:  target[0],
+					Prefix: target[1],
+				})
+			}
+
+			targets.Changelog = fetchedTargetList.Changelog
+
+			return targets
+		}
+	}
+
+	targets.Error = &ErrorWrapper{Message: "Could not find fw.json in firmware artifact"}
+	return targets
 }

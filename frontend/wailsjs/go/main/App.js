@@ -6,6 +6,10 @@ export function FetchReleases() {
   return window['go']['main']['App']['FetchReleases']();
 }
 
+export function FetchTargets(arg1) {
+  return window['go']['main']['App']['FetchTargets'](arg1);
+}
+
 export function GetVersion() {
   return window['go']['main']['App']['GetVersion']();
 }

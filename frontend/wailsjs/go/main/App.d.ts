@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function FetchReleases():Promise<main.FetchedReleases>;
 
+export function FetchTargets(arg1:main.ReleaseMeta):Promise<main.FetchedTargets>;
+
 export function GetVersion():Promise<string>;
 
 export function Greet(arg1:string):Promise<string>;
