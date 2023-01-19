@@ -4,7 +4,9 @@ import (
 	"embed"
 	"fmt"
 
+	"bigspeed.me/uplink/pkg/config"
 	"github.com/joho/godotenv"
+	"github.com/soypat/rebed"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -13,11 +15,19 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// Embed support files (dfu-util) in the binary.
+//
+//go:embed all:support
+var supportFiles embed.FS
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env!")
 	}
+
+	// If the config directory doesn't already contain the support files, unpack them
+	rebed.Patch(supportFiles, config.Default())
 
 	// Create an instance of the app structure
 	app := NewApp()

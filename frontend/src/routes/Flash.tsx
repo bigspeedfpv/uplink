@@ -3,19 +3,30 @@ import {
   Badge,
   Button,
   Card,
+  Center,
   Code,
   Flex,
   Group,
-  Loader,
   Select,
   Space,
+  Stack,
   Stepper,
   Text,
   Transition,
+  UnstyledButton,
 } from "@mantine/core";
-import { IconGitBranch, IconDownload, IconTargetArrow } from "@tabler/icons";
+import {
+  IconGitBranch,
+  IconDownload,
+  IconTargetArrow,
+  IconUsb,
+} from "@tabler/icons";
 import ReactMarkdown from "react-markdown";
-import { FetchReleases, FetchTargets } from "../../wailsjs/go/main/App";
+import {
+  FetchReleases,
+  FetchTargets,
+  FlashDfu,
+} from "../../wailsjs/go/main/App";
 import { main as models } from "../../wailsjs/go/models";
 
 function Flash() {
@@ -32,6 +43,8 @@ function Flash() {
     React.useState<models.FetchedTargets>(new models.FetchedTargets());
   const [fwTarget, setFwTarget] = React.useState<models.Target>();
 
+  const [debug, setDebug] = React.useState<string>("");
+
   const nextPage = () => setPage(page + 1);
   const prevPage = () => setPage(page - 1);
 
@@ -40,6 +53,9 @@ function Flash() {
     FetchReleases().then((r) => {
       setFetchedReleases(r);
       setReleasesLoaded(true);
+    });
+    FlashDfu("a").then((r) => {
+      setDebug(r.output);
     });
   }, []);
 
@@ -85,6 +101,8 @@ function Flash() {
       setEnableNext(!!fwVersion); // Only enable target page if firmware is selected
     } else if (page === 1) {
       setEnableNext(!!fwTarget); // Only enable flash page if target is selected
+    } else {
+      setEnableNext(false); // There's no next page after Flash!
     }
   }, [page, fwVersion, fwTarget]);
 
@@ -124,13 +142,11 @@ function Flash() {
             transitionTimingFunction="ease"
             w="100%"
           />
-
           {fetchedReleases.error && (
             <Text color="red">
               Failed to fetch releases: {fetchedReleases.error.message}
             </Text>
           )}
-
           <Transition
             mounted={!!fwVersion}
             transition="fade"
@@ -155,6 +171,7 @@ function Flash() {
             )}
           </Transition>
         </Stepper.Step>
+
         <Stepper.Step
           label="Target"
           description="Select your radio"
@@ -164,7 +181,7 @@ function Flash() {
           <Select
             label="Radio Target"
             placeholder={
-              targetsLoaded
+              targetsLoaded && !fetchedTargets.error
                 ? "Select target..."
                 : "Downloading firmware data..."
             }
@@ -180,35 +197,98 @@ function Flash() {
             transitionDuration={200}
             transitionTimingFunction="ease"
           />
+          <Space h="md" />
 
-          {fwTarget && (
+          {fetchedTargets.error && (
             <>
-              <Space h="md" />
-              <Text size="md" weight="bold">
-                Using firmware file with prefix <Code>{fwTarget?.prefix}</Code>
-                {colorTargets.includes(fwTarget?.prefix) ? (
-                  <Badge ml="xs" color="green">
-                    Color
-                  </Badge>
-                ) : (
-                  <Badge ml="xs" color="gray" variant="filled">
-                    B&W
-                  </Badge>
-                )}
+              <Text color="red" weight="bold">
+                Error loading firmware targets!
               </Text>
+              <Text color="red">{fetchedTargets.error.message}</Text>
             </>
           )}
+
+          {fwTarget && (
+            <Text size="md" weight="bold">
+              Using firmware file with prefix <Code>{fwTarget?.prefix}</Code>
+              {colorTargets.includes(fwTarget?.prefix) ? (
+                <Badge ml="xs" color="green">
+                  Color
+                </Badge>
+              ) : (
+                <Badge ml="xs" color="gray" variant="filled">
+                  B&W
+                </Badge>
+              )}
+            </Text>
+          )}
         </Stepper.Step>
+
         <Stepper.Step
           label="Flash"
           description="Install EdgeTX"
           icon={<IconDownload size={18} />}
         >
-          cccc
+          <Center h={375}>
+            <Group spacing={32}>
+              <UnstyledButton>
+                <Card
+                  radius="lg"
+                  sx={(theme) => ({
+                    backgroundColor: theme.fn.variant({
+                      variant: "light",
+                      color: "blue",
+                    }).background,
+                    color: theme.fn.variant({
+                      variant: "light",
+                      color: "blue",
+                    }).color,
+                    "&:hover": {
+                      boxShadow: theme.shadows.lg,
+                      backgroundColor: theme.colors.dark[5],
+                    },
+                    "&:active": {
+                      backgroundColor: theme.colors.dark[6],
+                    },
+                    transition: "all 0.2s ease",
+                  })}
+                >
+                  <Stack w={200} h={200} align="center" justify="center">
+                    <IconUsb size={96} />
+                    <Text size="xl" weight="bold">
+                      Flash Radio
+                    </Text>
+                  </Stack>
+                </Card>
+              </UnstyledButton>
+              <UnstyledButton>
+                <Card
+                  radius="lg"
+                  sx={(theme) => ({
+                    "&:hover": {
+                      boxShadow: theme.shadows.lg,
+                      backgroundColor: theme.colors.dark[5],
+                    },
+                    "&:active": {
+                      backgroundColor: theme.colors.dark[6],
+                    },
+                    transition: "all 0.2s ease",
+                  })}
+                >
+                  <Stack w={200} h={200} align="center" justify="center">
+                    <IconDownload size={96} />
+                    <Text size="xl" weight="bold">
+                      Save to File
+                    </Text>
+                  </Stack>
+                </Card>
+              </UnstyledButton>
+            </Group>
+          </Center>
         </Stepper.Step>
+
         <Stepper.Completed>DONE</Stepper.Completed>
       </Stepper>
-
       <Button.Group w="100%">
         <Button
           variant="default"

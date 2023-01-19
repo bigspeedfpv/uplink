@@ -3,8 +3,10 @@ module bigspeed.me/uplink
 go 1.18
 
 require (
+	github.com/adrg/xdg v0.4.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/joho/godotenv v1.4.0
+	github.com/soypat/rebed v0.2.3
 	github.com/wailsapp/wails/v2 v2.3.1
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17
 	golang.org/x/oauth2 v0.4.0

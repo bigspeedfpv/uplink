@@ -41,6 +41,12 @@ type targetsMeta struct {
 	Changelog string     `json:"changelog"`
 }
 
+// DfuFlashResponse represents the status of a DFU flash and the output of the command.
+type DfuFlashResponse struct {
+	Success bool   `json:"success"`
+	Output  string `json:"output"`
+}
+
 // Filter returns a new slice containing all elements of s that satisfy fn.
 func filter[T any](s []T, fn func(T) bool) []T {
 	var p []T

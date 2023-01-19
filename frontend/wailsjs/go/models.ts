@@ -1,5 +1,19 @@
 export namespace main {
 	
+	export class DfuFlashResponse {
+	    success: boolean;
+	    output: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DfuFlashResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.success = source["success"];
+	        this.output = source["output"];
+	    }
+	}
 	export class ErrorWrapper {
 	    message: string;
 	

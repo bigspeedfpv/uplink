@@ -2,16 +2,17 @@ package main
 
 import (
 	"archive/zip"
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 
+	"bigspeed.me/uplink/pkg/config"
 	"github.com/google/go-github/github"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
@@ -108,18 +109,23 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	// Write response body to firmware.zip
+	fwZip, err := os.Create(config.Default() + "/firmware.zip")
+	if err != nil {
+		targets.Error = &ErrorWrapper{Message: err.Error()}
+		return targets
+	}
+	defer fwZip.Close()
+	io.Copy(fwZip, resp.Body)
+
+	// ...and read BACK from the zip
+	read, err := zip.OpenReader(config.Default() + "/firmware.zip")
 	if err != nil {
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
 	}
 
-	read, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
-	if err != nil {
-		targets.Error = &ErrorWrapper{Message: err.Error()}
-		return targets
-	}
-
+	// Read metadata from fw.json to return to frontend
 	for _, file := range read.File {
 		if file.Name == "fw.json" {
 			fwIdx, err := file.Open()
@@ -128,7 +134,7 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 				return targets
 			}
 
-			fwIdxRead, err := ioutil.ReadAll(fwIdx)
+			fwIdxRead, err := io.ReadAll(fwIdx)
 			if err != nil {
 				targets.Error = &ErrorWrapper{Message: err.Error()}
 			}
@@ -153,4 +159,43 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 
 	targets.Error = &ErrorWrapper{Message: "Could not find fw.json in firmware artifact"}
 	return targets
+}
+
+// CheckDfuAvailable returns a boolean representing the aviailability of dfu-util.
+func (app *App) CheckDfuAvailable() bool {
+	_, err := exec.LookPath("dfu-util")
+
+	return (runtime.GOOS == "windows" && runtime.GOARCH == "amd64") ||
+		(runtime.GOOS == "linux" && runtime.GOARCH == "amd64") ||
+		(runtime.GOOS == "darwin") ||
+		(err == nil)
+}
+
+// FlashDfu flashes the connected radio with the firmware with the given prefix.
+// DFU availability already verified with CheckDfuAvailable.
+func (app *App) FlashDfu(prefix string) DfuFlashResponse {
+	var dfuUtilPath string
+
+	if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
+		dfuUtilPath = config.Default() + "/support/dfu-util-static.exe"
+	} else if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
+		dfuUtilPath = config.Default() + "/support/dfu-util-static"
+	} else if runtime.GOOS == "darwin" {
+		dfuUtilPath = config.Default() + "/support/dfu-util"
+	} else {
+		dfuUtilPath = "dfu-util"
+	}
+
+	out, err := exec.Command(dfuUtilPath, "-V").Output()
+	if err != nil {
+		return DfuFlashResponse{
+			Success: false,
+			Output:  err.Error(),
+		}
+	}
+
+	return DfuFlashResponse{
+		Success: true,
+		Output:  string(out),
+	}
 }
