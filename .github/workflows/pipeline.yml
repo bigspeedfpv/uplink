@@ -1,0 +1,58 @@
+name: build
+run-name: Build and publish
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release Tag"
+        required: true
+        default: "develop"
+        type: string
+      version:
+        description: "Release Version Name"
+        required: true
+        default: "Development Build"
+        type: string
+      prerelease:
+        description: "Whether to mark as a prerelease"
+        required: true
+        type: boolean
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ inputs.version }}
+          draft: false
+          prerelease: ${{ inputs.prerelease }}
+          generate_release_notes: false
+
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-latest, macos-11]
+        include:
+          - os: ubuntu-20.04
+            release_path: ./build/bin/uplink
+          - os: windows-latest
+            release_path: |
+              ./build/bin/uplink.exe
+              ./build/bin/uplink-amd64-installer.exe
+          - os: macos-11
+            release_path: ./build/bin/uplink
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "^1.18"
+      - run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - run: wails build
+      - uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.create_release.outputs.tag-name }}
+          files: ${{ matrix.release_path }}
