@@ -65,7 +65,7 @@ jobs:
         run: wails build -o ${{ matrix.output_name }} -ldflags "-X 'main.version=${{ inputs.tag }}'"
 
       - name: Upload Build Artifacts
-      - uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ inputs.tag }}
           files: ./build/bin/${{ matrix.output_name }}
