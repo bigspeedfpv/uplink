@@ -9,7 +9,7 @@ jobs:
         include:
           - os: windows-latest
             opts: -nsis
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
