@@ -2,22 +2,18 @@ name: "build"
 on: [push]
 
 jobs:
-  package:
+  build:
     strategy:
       matrix:
         platform: [windows-latest, macos-11, ubuntu-20.04]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ^1.18
 
-      - name: Install Node
-        uses: actions/setup-node@v2
+      - name: Install Go
+        uses: actions/setup-go@v3
         with:
-          node-version: 16
+          go-version: "^1.18"
 
       - name: Get Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
