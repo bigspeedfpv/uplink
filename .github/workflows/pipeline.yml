@@ -53,9 +53,9 @@ jobs:
         with:
           go-version: "^1.18"
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      - if: runner.os == "Linux"
+      - if: runner.os == 'Linux'
         run: sudo apt-get install libgtk-3-dev
-      - if: runner.os == "macOS"
+      - if: runner.os == 'macOS'
         run: xcode-select --install
       - run: wails build -ldflags "-X 'main.version=${{ inputs.tag }}'"
       - uses: softprops/action-gh-release@v1
