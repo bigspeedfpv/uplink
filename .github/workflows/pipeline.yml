@@ -39,24 +39,33 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macos-11]
         include:
           - os: ubuntu-20.04
-            release_path: ./build/bin/uplink
+            output_name: uplink-linux64
           - os: windows-latest
-            release_path: |
-              ./build/bin/uplink.exe
-              ./build/bin/uplink-amd64-installer.exe
+            output_name: uplink-win64.exe
           - os: macos-11
-            release_path: ./build/bin/uplink
+            output_name: uplink-macos
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
         with:
           go-version: "^1.18"
-      - run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      - if: runner.os == 'Linux'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Install Linux deps
+        if: runner.os == 'Linux'
         run: sudo apt-get install libgtk-3-dev libwebkit2gtk-4.0-dev
-      - run: wails build -ldflags "-X 'main.version=${{ inputs.tag }}'"
+
+      - name: Build with Wails
+        run: wails build -o ${{ matrix.output_name }} -ldflags "-X 'main.version=${{ inputs.tag }}'"
+
+      - name: Upload Build Artifacts
       - uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ inputs.tag }}
-          files: ${{ matrix.release_path }}
+          files: ./build/bin/${{ matrix.output_name }}
