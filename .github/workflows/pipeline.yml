@@ -39,11 +39,14 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macos-11]
         include:
           - os: ubuntu-20.04
-            output_name: uplink-linux64
+            output_name: ./build/bin/uplink-linux64
           - os: windows-latest
-            output_name: uplink-win64.exe
+            output_name: |
+              ./build/bin/uplink.exe
+              ./build/bin/uplink-amd64-installer.exe
+            opts: -nsis
           - os: macos-11
-            output_name: uplink-macos
+            output_name: ./build/bin/Uplink.app
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -62,10 +65,10 @@ jobs:
         run: sudo apt-get install libgtk-3-dev libwebkit2gtk-4.0-dev
 
       - name: Build with Wails
-        run: wails build -o ${{ matrix.output_name }} -ldflags "-X 'main.version=${{ inputs.tag }}'"
+        run: wails build ${{ matrix.opts }} -ldflags "-X 'main.version=${{ inputs.tag }}'"
 
       - name: Upload Build Artifacts
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ inputs.tag }}
-          files: ./build/bin/${{ matrix.output_name }}
+          files: ${{ matrix.output_name }}
