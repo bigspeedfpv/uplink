@@ -10,6 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Get Commit Hash
+        id: commit
+        uses: pr-mpt/actions-commit-hash@v2
+
       - name: Install Go
         uses: actions/setup-go@v3
         with:
@@ -32,10 +36,10 @@ jobs:
           scoop install nsis
 
       - name: Build with Wails
-        run: wails build ${{ matrix.opts }} -ldflags "-X 'main.version=${{ inputs.tag }}'"
+        run: wails build ${{ matrix.opts }} -ldflags "-X 'main.version=${{ steps.commit.outputs.short }}'"
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Uplink-${{ runner.os }}
           path: build/bin/*
