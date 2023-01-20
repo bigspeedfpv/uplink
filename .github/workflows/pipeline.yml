@@ -58,5 +58,5 @@ jobs:
       - run: wails build -ldflags "-X 'main.version=${{ inputs.tag }}'"
       - uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.create_release.outputs.tag-name }}
+          tag_name: ${{ inputs.tag }}
           files: ${{ matrix.release_path }}
