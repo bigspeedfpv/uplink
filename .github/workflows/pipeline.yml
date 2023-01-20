@@ -53,8 +53,6 @@ jobs:
         with:
           go-version: "^1.18"
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      - run: npm ci
-        working-directory: ./frontend
       - run: wails build -ldflags "-X 'main.version=${{ inputs.tag }}'"
       - uses: softprops/action-gh-release@v1
         with:
