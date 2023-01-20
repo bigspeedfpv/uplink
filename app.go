@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -177,16 +178,83 @@ func (app *App) FlashDfu(prefix string) DfuFlashResponse {
 	var dfuUtilPath string
 
 	if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
-		dfuUtilPath = config.Default() + "/support/dfu-util-static.exe"
+		dfuUtilPath = config.Default() + "/support/win64/dfu-util.exe"
 	} else if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
-		dfuUtilPath = config.Default() + "/support/dfu-util-static"
+		dfuUtilPath = config.Default() + "/support/linux-amd64/dfu-util"
 	} else if runtime.GOOS == "darwin" {
-		dfuUtilPath = config.Default() + "/support/dfu-util"
+		dfuUtilPath = config.Default() + "/support/darwin/dfu-util"
 	} else {
 		dfuUtilPath = "dfu-util"
 	}
 
-	out, err := exec.Command(dfuUtilPath, "-V").Output()
+	// Open artifact zip for reading
+	read, err := zip.OpenReader(config.Default() + "/firmware.zip")
+	if err != nil {
+		return DfuFlashResponse{
+			Success: false,
+			Output:  err.Error(),
+		}
+	}
+	defer read.Close()
+
+	// Loop through each file to find the correct target
+	var targetFile *zip.File
+	for _, file := range read.File {
+		if strings.Contains(file.Name, prefix) {
+			// If filename is shorter than previously found file, it's a better match
+			if targetFile == nil || len(file.Name) < len(targetFile.Name) {
+				targetFile = file
+			}
+		}
+	}
+
+	target, err := targetFile.Open()
+	if err != nil {
+		return DfuFlashResponse{
+			Success: false,
+			Output:  err.Error(),
+		}
+	}
+	defer target.Close()
+
+	// Create bin for flashing
+	bin, err := os.Create(config.Default() + "/firmware.bin")
+	if err != nil {
+		return DfuFlashResponse{
+			Success: false,
+			Output:  err.Error(),
+		}
+	}
+	defer bin.Close()
+
+	_, err = io.Copy(bin, target)
+	if err != nil {
+		return DfuFlashResponse{
+			Success: false,
+			Output:  err.Error(),
+		}
+	}
+
+	cmd := exec.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.Default()+"/firmware.bin")
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+	cmd.Start()
+
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+	}()
+
+	err = cmd.Wait()
 	if err != nil {
 		return DfuFlashResponse{
 			Success: false,
@@ -196,6 +264,6 @@ func (app *App) FlashDfu(prefix string) DfuFlashResponse {
 
 	return DfuFlashResponse{
 		Success: true,
-		Output:  string(out),
+		Output:  "",
 	}
 }

@@ -7,6 +7,8 @@ import {
   Code,
   Flex,
   Group,
+  Loader,
+  Modal,
   Select,
   Space,
   Stack,
@@ -43,19 +45,31 @@ function Flash() {
     React.useState<models.FetchedTargets>(new models.FetchedTargets());
   const [fwTarget, setFwTarget] = React.useState<models.Target>();
 
-  const [debug, setDebug] = React.useState<string>("");
+  const [flashResult, setFlashResult] =
+    React.useState<models.DfuFlashResponse>();
+
+  const [flashing, setFlashing] = React.useState(false);
+  const [flashDone, setFlashDone] = React.useState(false);
 
   const nextPage = () => setPage(page + 1);
   const prevPage = () => setPage(page - 1);
+
+  // Only enable next button when current step is complete
+  React.useEffect(() => {
+    if (page === 0) {
+      setEnableNext(!!fwVersion); // Only enable target page if firmware is selected
+    } else if (page === 1) {
+      setEnableNext(!!fwTarget); // Only enable flash page if target is selected
+    } else {
+      setEnableNext(false); // There's no next page after Flash!
+    }
+  }, [page, fwVersion, fwTarget]);
 
   // Fetch releases on page open
   React.useEffect(() => {
     FetchReleases().then((r) => {
       setFetchedReleases(r);
       setReleasesLoaded(true);
-    });
-    FlashDfu("a").then((r) => {
-      setDebug(r.output);
     });
   }, []);
 
@@ -95,214 +109,271 @@ function Flash() {
     });
   };
 
-  // Only enable next button when current step is complete
-  React.useEffect(() => {
-    if (page === 0) {
-      setEnableNext(!!fwVersion); // Only enable target page if firmware is selected
-    } else if (page === 1) {
-      setEnableNext(!!fwTarget); // Only enable flash page if target is selected
-    } else {
-      setEnableNext(false); // There's no next page after Flash!
-    }
-  }, [page, fwVersion, fwTarget]);
+  const flashRadio = () => {
+    setFlashing(true);
+    FlashDfu(fwTarget!.prefix).then((r) => {
+      setFlashing(false);
+      setFlashDone(true);
+      console.log(r);
+    });
+  };
 
   return (
-    <Flex
-      p="lg"
-      direction="column"
-      align="center"
-      justify="space-between"
-      h="100%"
-    >
-      <Stepper
-        active={page}
-        onStepClick={setPage}
-        allowNextStepsSelect={false}
-        w="100%"
+    <>
+      <Flex
+        p="lg"
+        direction="column"
+        align="center"
+        justify="space-between"
+        h="100%"
       >
-        <Stepper.Step
-          label="Firmware"
-          description="Choose your version"
-          icon={<IconGitBranch size={18} />}
+        <Stepper
+          active={page}
+          onStepClick={setPage}
+          allowNextStepsSelect={false}
+          w="100%"
         >
-          <Space h="lg" />
-          <Select
-            label="EdgeTX Version"
-            placeholder={releasesLoaded ? "Select version..." : "Loading..."}
-            itemComponent={FwItem}
-            data={fetchedReleases.releases || []}
-            value={fwVersion?.value || ""}
-            maxDropdownHeight={295}
-            nothingFound="No versions found"
-            onChange={(v) => setFwVersion(fetchReleaseByName(v))}
-            shadow="md"
-            disabled={!!fetchedReleases.error || !releasesLoaded}
-            transition="fade"
-            transitionDuration={200}
-            transitionTimingFunction="ease"
-            w="100%"
-          />
-          {fetchedReleases.error && (
-            <Text color="red">
-              Failed to fetch releases: {fetchedReleases.error.message}
-            </Text>
-          )}
-          <Transition
-            mounted={!!fwVersion}
-            transition="fade"
-            duration={300}
-            timingFunction="ease"
+          <Stepper.Step
+            label="Firmware"
+            description="Choose your version"
+            icon={<IconGitBranch size={18} />}
           >
-            {(styles) => (
-              <div style={styles}>
-                <Space h="md" />
-                <Card shadow="md" h={285} sx={{ overflowY: "auto" }}>
-                  <Group>
-                    <Text size={25} weight="bold">
-                      EdgeTX {fwVersion!.value} Release Notes
-                    </Text>
-                    {fwVersion?.latest && (
-                      <Badge variant="outline">Latest</Badge>
-                    )}
-                  </Group>
-                  <ReactMarkdown children={fwVersion!.releaseNotes} />
-                </Card>
-              </div>
-            )}
-          </Transition>
-        </Stepper.Step>
-
-        <Stepper.Step
-          label="Target"
-          description="Select your radio"
-          icon={<IconTargetArrow size={18} />}
-        >
-          <Space h="lg" />
-          <Select
-            label="Radio Target"
-            placeholder={
-              targetsLoaded && !fetchedTargets.error
-                ? "Select target..."
-                : "Downloading firmware data..."
-            }
-            data={fetchedTargets.targets || []}
-            value={fwTarget?.value || ""}
-            maxDropdownHeight={295}
-            searchable
-            nothingFound="No targets found"
-            onChange={(t) => setFwTarget(fetchTargetByName(t))}
-            shadow="md"
-            disabled={!!fetchedTargets.error || !targetsLoaded}
-            transition="fade"
-            transitionDuration={200}
-            transitionTimingFunction="ease"
-          />
-          <Space h="md" />
-
-          {fetchedTargets.error && (
-            <>
-              <Text color="red" weight="bold">
-                Error loading firmware targets!
+            <Space h="lg" />
+            <Select
+              label="EdgeTX Version"
+              placeholder={releasesLoaded ? "Select version..." : "Loading..."}
+              itemComponent={FwItem}
+              data={fetchedReleases.releases || []}
+              value={fwVersion?.value || ""}
+              maxDropdownHeight={295}
+              nothingFound="No versions found"
+              onChange={(v) => setFwVersion(fetchReleaseByName(v))}
+              shadow="md"
+              disabled={!!fetchedReleases.error || !releasesLoaded}
+              transition="fade"
+              transitionDuration={200}
+              transitionTimingFunction="ease"
+              w="100%"
+            />
+            {fetchedReleases.error && (
+              <Text color="red">
+                Failed to fetch releases: {fetchedReleases.error.message}
               </Text>
-              <Text color="red">{fetchedTargets.error.message}</Text>
-            </>
-          )}
-
-          {fwTarget && (
-            <Text size="md" weight="bold">
-              Using firmware file with prefix <Code>{fwTarget?.prefix}</Code>
-              {colorTargets.includes(fwTarget?.prefix) ? (
-                <Badge ml="xs" color="green">
-                  Color
-                </Badge>
-              ) : (
-                <Badge ml="xs" color="gray" variant="filled">
-                  B&W
-                </Badge>
+            )}
+            <Transition
+              mounted={!!fwVersion}
+              transition="fade"
+              duration={300}
+              timingFunction="ease"
+            >
+              {(styles) => (
+                <div style={styles}>
+                  <Space h="md" />
+                  <Card shadow="md" h={285} sx={{ overflowY: "auto" }}>
+                    <Group>
+                      <Text size={25} weight="bold">
+                        EdgeTX {fwVersion!.value} Release Notes
+                      </Text>
+                      {fwVersion?.latest && (
+                        <Badge variant="outline">Latest</Badge>
+                      )}
+                    </Group>
+                    <ReactMarkdown children={fwVersion!.releaseNotes} />
+                  </Card>
+                </div>
               )}
+            </Transition>
+          </Stepper.Step>
+
+          <Stepper.Step
+            label="Target"
+            description="Select your radio"
+            icon={<IconTargetArrow size={18} />}
+          >
+            <Space h="lg" />
+            <Select
+              label="Radio Target"
+              placeholder={
+                targetsLoaded && !fetchedTargets.error
+                  ? "Select target..."
+                  : "Downloading firmware data..."
+              }
+              data={fetchedTargets.targets || []}
+              value={fwTarget?.value || ""}
+              maxDropdownHeight={295}
+              searchable
+              nothingFound="No targets found"
+              onChange={(t) => setFwTarget(fetchTargetByName(t))}
+              shadow="md"
+              disabled={!!fetchedTargets.error || !targetsLoaded}
+              transition="fade"
+              transitionDuration={200}
+              transitionTimingFunction="ease"
+            />
+            <Space h="md" />
+
+            {fetchedTargets.error && (
+              <>
+                <Text color="red" weight="bold">
+                  Error loading firmware targets!
+                </Text>
+                <Text color="red">{fetchedTargets.error.message}</Text>
+              </>
+            )}
+
+            {fwTarget && (
+              <Text size="md" weight="bold">
+                Using firmware file with prefix <Code>{fwTarget?.prefix}</Code>
+                {colorTargets.includes(fwTarget?.prefix) ? (
+                  <Badge ml="xs" color="green">
+                    Color
+                  </Badge>
+                ) : (
+                  <Badge ml="xs" color="gray" variant="filled">
+                    B&W
+                  </Badge>
+                )}
+              </Text>
+            )}
+          </Stepper.Step>
+
+          <Stepper.Step
+            label="Flash"
+            description="Install EdgeTX"
+            icon={<IconDownload size={18} />}
+          >
+            <Center h={375}>
+              <Group spacing={32}>
+                <UnstyledButton onClick={flashRadio}>
+                  <Card
+                    radius="lg"
+                    sx={(theme) => ({
+                      backgroundColor: theme.fn.variant({
+                        variant: "light",
+                        color: "blue",
+                      }).background,
+                      color: theme.fn.variant({
+                        variant: "light",
+                        color: "blue",
+                      }).color,
+                      "&:hover": {
+                        boxShadow: theme.shadows.lg,
+                        backgroundColor: theme.colors.dark[5],
+                      },
+                      "&:active": {
+                        backgroundColor: theme.colors.dark[6],
+                      },
+                      transition: "all 0.2s ease",
+                    })}
+                  >
+                    <Stack w={200} h={200} align="center" justify="center">
+                      <IconUsb size={96} />
+                      <Text size="xl" weight="bold">
+                        Flash Radio
+                      </Text>
+                    </Stack>
+                  </Card>
+                </UnstyledButton>
+                <UnstyledButton>
+                  <Card
+                    radius="lg"
+                    sx={(theme) => ({
+                      "&:hover": {
+                        boxShadow: theme.shadows.lg,
+                        backgroundColor: theme.colors.dark[5],
+                      },
+                      "&:active": {
+                        backgroundColor: theme.colors.dark[6],
+                      },
+                      transition: "all 0.2s ease",
+                    })}
+                  >
+                    <Stack w={200} h={200} align="center" justify="center">
+                      <IconDownload size={96} />
+                      <Text size="xl" weight="bold">
+                        Save to File
+                      </Text>
+                    </Stack>
+                  </Card>
+                </UnstyledButton>
+              </Group>
+            </Center>
+          </Stepper.Step>
+
+          <Stepper.Completed>DONE</Stepper.Completed>
+        </Stepper>
+        <Button.Group w="100%">
+          <Button
+            variant="default"
+            fullWidth
+            disabled={page === 0}
+            onClick={prevPage}
+          >
+            Back
+          </Button>
+          <Button fullWidth disabled={!enableNext} onClick={nextPage}>
+            Next
+          </Button>
+        </Button.Group>
+      </Flex>
+
+      <Modal
+        withCloseButton={false}
+        closeOnClickOutside={false}
+        closeOnEscape={false}
+        opened={flashing}
+        centered={true}
+        onClose={() => {}}
+        transitionDuration={300}
+      >
+        <Center p="xl">
+          <Group>
+            <Text size={36} weight="bold">
+              Flashing...
             </Text>
-          )}
-        </Stepper.Step>
+            <Loader />
+          </Group>
+        </Center>
+      </Modal>
 
-        <Stepper.Step
-          label="Flash"
-          description="Install EdgeTX"
-          icon={<IconDownload size={18} />}
+      <Modal
+        opened={flashDone}
+        centered={true}
+        onClose={() => {
+          setFlashDone(false);
+        }}
+        withCloseButton={false}
+      >
+        <Text
+          size={24}
+          weight="bold"
+          sx={(styles) => ({
+            color: flashResult?.success
+              ? styles.colors.dimmed
+              : styles.colors.red[5],
+          })}
         >
-          <Center h={375}>
-            <Group spacing={32}>
-              <UnstyledButton>
-                <Card
-                  radius="lg"
-                  sx={(theme) => ({
-                    backgroundColor: theme.fn.variant({
-                      variant: "light",
-                      color: "blue",
-                    }).background,
-                    color: theme.fn.variant({
-                      variant: "light",
-                      color: "blue",
-                    }).color,
-                    "&:hover": {
-                      boxShadow: theme.shadows.lg,
-                      backgroundColor: theme.colors.dark[5],
-                    },
-                    "&:active": {
-                      backgroundColor: theme.colors.dark[6],
-                    },
-                    transition: "all 0.2s ease",
-                  })}
-                >
-                  <Stack w={200} h={200} align="center" justify="center">
-                    <IconUsb size={96} />
-                    <Text size="xl" weight="bold">
-                      Flash Radio
-                    </Text>
-                  </Stack>
-                </Card>
-              </UnstyledButton>
-              <UnstyledButton>
-                <Card
-                  radius="lg"
-                  sx={(theme) => ({
-                    "&:hover": {
-                      boxShadow: theme.shadows.lg,
-                      backgroundColor: theme.colors.dark[5],
-                    },
-                    "&:active": {
-                      backgroundColor: theme.colors.dark[6],
-                    },
-                    transition: "all 0.2s ease",
-                  })}
-                >
-                  <Stack w={200} h={200} align="center" justify="center">
-                    <IconDownload size={96} />
-                    <Text size="xl" weight="bold">
-                      Save to File
-                    </Text>
-                  </Stack>
-                </Card>
-              </UnstyledButton>
-            </Group>
-          </Center>
-        </Stepper.Step>
-
-        <Stepper.Completed>DONE</Stepper.Completed>
-      </Stepper>
-      <Button.Group w="100%">
+          {flashResult?.success ? "Flash successful!" : "Flash failed."}
+        </Text>
+        {flashResult?.output && (
+          <>
+            <Space h="md" />
+            <Text size="xl" color={flashResult?.success ? "dimmed" : "red"}>
+              {flashResult?.output}
+            </Text>
+          </>
+        )}
+        <Space h="lg" />
         <Button
-          variant="default"
           fullWidth
-          disabled={page === 0}
-          onClick={prevPage}
+          variant="outline"
+          color={flashResult?.success ? "blue" : "red"}
+          onClick={() => setFlashDone(false)}
         >
-          Back
+          Close
         </Button>
-        <Button fullWidth disabled={!enableNext} onClick={nextPage}>
-          Next
-        </Button>
-      </Button.Group>
-    </Flex>
+      </Modal>
+    </>
   );
 }
 
