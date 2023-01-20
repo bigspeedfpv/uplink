@@ -17,6 +17,7 @@ on:
         description: "Whether to mark as a prerelease"
         required: true
         type: boolean
+
 jobs:
   create_release:
     name: Create Release
@@ -39,7 +40,7 @@ jobs:
         os: [ubuntu-20.04, windows-latest, macos-11]
         include:
           - os: ubuntu-20.04
-            output_name: ./build/bin/uplink-linux64
+            output_name: ./build/bin/uplink
           - os: windows-latest
             output_name: |
               ./build/bin/uplink.exe
