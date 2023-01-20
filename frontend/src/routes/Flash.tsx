@@ -49,7 +49,6 @@ function Flash() {
     React.useState<models.DfuFlashResponse>();
 
   const [flashing, setFlashing] = React.useState(false);
-  const [flashDone, setFlashDone] = React.useState(false);
 
   const nextPage = () => setPage(page + 1);
   const prevPage = () => setPage(page - 1);
@@ -112,9 +111,9 @@ function Flash() {
   const flashRadio = () => {
     setFlashing(true);
     FlashDfu(fwTarget!.prefix).then((r) => {
+      setFlashResult(r);
       setFlashing(false);
-      setFlashDone(true);
-      console.log(r);
+      setPage(3);
     });
   };
 
@@ -127,12 +126,7 @@ function Flash() {
         justify="space-between"
         h="100%"
       >
-        <Stepper
-          active={page}
-          onStepClick={setPage}
-          allowNextStepsSelect={false}
-          w="100%"
-        >
+        <Stepper active={page} w="100%">
           <Stepper.Step
             label="Firmware"
             description="Choose your version"
@@ -300,13 +294,32 @@ function Flash() {
             </Center>
           </Stepper.Step>
 
-          <Stepper.Completed>DONE</Stepper.Completed>
+          <Stepper.Completed>
+            <Space h="lg" />
+            <Center>
+              <Text
+                size={36}
+                weight="bold"
+                sx={(styles) => ({
+                  color: flashResult?.success
+                    ? styles.colors.dimmed
+                    : styles.colors.red[5],
+                })}
+              >
+                {flashResult?.success ? "Flash successful!" : "Flash failed."}
+              </Text>
+            </Center>
+            <Space h="md" />
+            <Text size="xl" color={flashResult?.success ? "dimmed" : "red"}>
+              {flashResult?.output}
+            </Text>
+          </Stepper.Completed>
         </Stepper>
         <Button.Group w="100%">
           <Button
             variant="default"
             fullWidth
-            disabled={page === 0}
+            disabled={page === 0 || page === 3}
             onClick={prevPage}
           >
             Back
@@ -325,53 +338,20 @@ function Flash() {
         centered={true}
         onClose={() => {}}
         transitionDuration={300}
+        radius="md"
       >
-        <Center p="xl">
+        <Stack p="md" align="center">
           <Group>
+            <Loader />
             <Text size={36} weight="bold">
               Flashing...
             </Text>
-            <Loader />
           </Group>
-        </Center>
-      </Modal>
-
-      <Modal
-        opened={flashDone}
-        centered={true}
-        onClose={() => {
-          setFlashDone(false);
-        }}
-        withCloseButton={false}
-      >
-        <Text
-          size={24}
-          weight="bold"
-          sx={(styles) => ({
-            color: flashResult?.success
-              ? styles.colors.dimmed
-              : styles.colors.red[5],
-          })}
-        >
-          {flashResult?.success ? "Flash successful!" : "Flash failed."}
-        </Text>
-        {flashResult?.output && (
-          <>
-            <Space h="md" />
-            <Text size="xl" color={flashResult?.success ? "dimmed" : "red"}>
-              {flashResult?.output}
-            </Text>
-          </>
-        )}
-        <Space h="lg" />
-        <Button
-          fullWidth
-          variant="outline"
-          color={flashResult?.success ? "blue" : "red"}
-          onClick={() => setFlashDone(false)}
-        >
-          Close
-        </Button>
+          <Text size="lg" align="center">
+            This may take a while; we'll let you know when it's done.{" "}
+            <strong>Do not unplug your radio or close Uplink!</strong>
+          </Text>
+        </Stack>
       </Modal>
     </>
   );
