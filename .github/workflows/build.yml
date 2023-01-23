@@ -1,5 +1,5 @@
 name: "build"
-on: [push]
+on: [push, pull-request]
 
 jobs:
   build:
@@ -44,5 +44,40 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Uplink-${{ runner.os }}
+          name: uplink-${{ matrix.os }}
           path: build/bin/*
+
+  upload:
+    name: Upload Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: uplink-latest
+          path: uplink-latest
+
+      - name: Create dist folder
+        run: mkdir dist
+
+      - name: Extract Linux binary
+        run: unzip uplink-latest/uplink-ubuntu-20.04.zip -d dist/
+
+      - name: Extract Windows files
+        run: unzip uplink-latest/uplink-windows-latest.zip -d dist/
+
+      - name: Move MacOS files
+        run: mv uplink-latest/uplink-macos-11.zip dist/
+
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          title: "Latest Master Build"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          files: dist/*
+          automatic_release_tag: "latest"
+          prerelease: false
