@@ -223,6 +223,7 @@ dist
 .pnp.*
 
 # Wails
-build/
+build/*
+!build/appicon.png
 node_modules
 frontend/dist
