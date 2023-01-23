@@ -45,7 +45,7 @@ jobs:
           brew install graphicsmagick imagemagick
 
       - name: Build with Wails
-        run: wails build -o Uplink-${{ runner.os }} ${{ matrix.opts }} -ldflags "-X 'main.version=${{ steps.commit.outputs.sha }}'"
+        run: wails build ${{ matrix.opts }} -ldflags "-X 'main.version=${{ steps.commit.outputs.sha }}'"
 
       - name: Create DMG
         if: runner.os == 'macOS'
@@ -55,8 +55,6 @@ jobs:
       - name: Rename DMG
         if: runner.os == 'macOS'
         run: mv ./build/bin/Uplink*.dmg './build/bin/Uplink-${{ steps.commit.outputs.sha }}.dmg'
-
-      - run: ls build/bin
 
       - name: Upload Artifacts
         if: runner.os != 'macOS'
