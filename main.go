@@ -4,7 +4,7 @@ import (
 	"embed"
 	"fmt"
 
-	"bigspeed.me/uplink/pkg/config"
+	"bigspeed.me/uplink/internal/pkg/config"
 	"github.com/joho/godotenv"
 	"github.com/soypat/rebed"
 	"github.com/wailsapp/wails/v2"

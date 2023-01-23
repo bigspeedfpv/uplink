@@ -1,5 +1,14 @@
 package main
 
+import (
+	"archive/zip"
+	"io"
+	"os"
+	"strings"
+
+	"bigspeed.me/uplink/internal/pkg/config"
+)
+
 // FetchedReleases represents an array of release metadata along with an error status.
 type FetchedReleases struct {
 	Error    *ErrorWrapper `json:"error,omitempty"`
@@ -56,4 +65,51 @@ func filter[T any](s []T, fn func(T) bool) []T {
 		}
 	}
 	return p
+}
+
+// copyFirmwareToFile copies the firmware bin from the zip to the passed directory.
+func copyFirmwareToFile(prefix string, location string) error {
+	// Open artifact zip for reading
+	read, err := zip.OpenReader(config.Default() + "/firmware.zip")
+	if err != nil {
+		return err
+	}
+	defer read.Close()
+
+	// Loop through each file to find the correct target
+	var firmwareFile *zip.File
+	for _, file := range read.File {
+		if strings.Contains(file.Name, prefix) {
+			// If filename is shorter than previously found file, it's a better match
+			if firmwareFile == nil || len(file.Name) < len(firmwareFile.Name) {
+				firmwareFile = file
+			}
+		}
+	}
+
+	firmware, err := firmwareFile.Open()
+	if err != nil {
+		return err
+	}
+	defer firmware.Close()
+
+	// Create bin for flashing
+	bin, err := os.Create(location)
+	if err != nil {
+		return err
+	}
+	defer bin.Close()
+
+	_, err = io.Copy(bin, firmware)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// SaveFirmwareStatus represents whether a firmware save operation was successful, failed, or was cancelled.
+type SaveFirmwareStatus struct {
+	Status int    `json:"status"` // 0 = success, 1 = failure, 2 = cancelled
+	Path   string `json:"path"`
 }

@@ -18,8 +18,8 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import {
-  IconGitBranch,
   IconDownload,
+  IconGitBranch,
   IconTargetArrow,
   IconUsb,
 } from "@tabler/icons";
@@ -28,8 +28,10 @@ import {
   FetchReleases,
   FetchTargets,
   FlashDfu,
+  SaveFirmware,
 } from "../../wailsjs/go/main/App";
 import { main as models } from "../../wailsjs/go/models";
+import { showNotification } from "@mantine/notifications";
 
 function Flash() {
   const [page, setPage] = React.useState(0);
@@ -114,6 +116,30 @@ function Flash() {
       setFlashResult(r);
       setFlashing(false);
       setPage(3);
+    });
+  };
+
+  const saveFirmware = () => {
+    SaveFirmware(fwTarget!.prefix).then((s) => {
+      if (s.status == 0) {
+        showNotification({
+          title: "Firmware saved!",
+          message: `Firmware saved at ${s.path}.`,
+          color: "green",
+        });
+      } else if (s.status == 2) {
+        showNotification({
+          title: "Firmware save cancelled.",
+          message: "You can still flash the radio.",
+          color: "yellow",
+        });
+      } else {
+        showNotification({
+          title: "Failed to save firmware!",
+          message: "Save was either cancelled or missing write permissions.",
+          color: "red",
+        });
+      }
     });
   };
 
@@ -268,7 +294,7 @@ function Flash() {
                     </Stack>
                   </Card>
                 </UnstyledButton>
-                <UnstyledButton>
+                <UnstyledButton onClick={saveFirmware}>
                   <Card
                     radius="lg"
                     sx={(theme) => ({

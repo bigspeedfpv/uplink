@@ -13,3 +13,5 @@ export function FlashDfu(arg1:string):Promise<main.DfuFlashResponse>;
 export function GetVersion():Promise<string>;
 
 export function Greet(arg1:string):Promise<string>;
+
+export function SaveFirmware(arg1:string):Promise<main.SaveFirmwareStatus>;

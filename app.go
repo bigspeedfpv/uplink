@@ -13,7 +13,10 @@ import (
 	"runtime"
 	"strings"
 
-	"bigspeed.me/uplink/pkg/config"
+	"github.com/adrg/xdg"
+	wails "github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"bigspeed.me/uplink/internal/pkg/config"
 	"github.com/google/go-github/github"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
@@ -163,7 +166,7 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 }
 
 // CheckDfuAvailable returns a boolean representing the aviailability of dfu-util.
-func (app *App) CheckDfuAvailable() bool {
+func (a *App) CheckDfuAvailable() bool {
 	_, err := exec.LookPath("dfu-util")
 
 	return (runtime.GOOS == "windows" && runtime.GOARCH == "amd64") ||
@@ -174,7 +177,7 @@ func (app *App) CheckDfuAvailable() bool {
 
 // FlashDfu flashes the connected radio with the firmware with the given prefix.
 // DFU availability already verified with CheckDfuAvailable.
-func (app *App) FlashDfu(prefix string) DfuFlashResponse {
+func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 	var dfuUtilPath string
 
 	if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
@@ -187,51 +190,11 @@ func (app *App) FlashDfu(prefix string) DfuFlashResponse {
 		dfuUtilPath = "dfu-util"
 	}
 
-	// Open artifact zip for reading
-	read, err := zip.OpenReader(config.Default() + "/firmware.zip")
+	err := copyFirmwareToFile(prefix, config.Default()+"/firmware.bin")
 	if err != nil {
 		return DfuFlashResponse{
 			Success: false,
-			Output:  err.Error(),
-		}
-	}
-	defer read.Close()
-
-	// Loop through each file to find the correct target
-	var targetFile *zip.File
-	for _, file := range read.File {
-		if strings.Contains(file.Name, prefix) {
-			// If filename is shorter than previously found file, it's a better match
-			if targetFile == nil || len(file.Name) < len(targetFile.Name) {
-				targetFile = file
-			}
-		}
-	}
-
-	target, err := targetFile.Open()
-	if err != nil {
-		return DfuFlashResponse{
-			Success: false,
-			Output:  err.Error(),
-		}
-	}
-	defer target.Close()
-
-	// Create bin for flashing
-	bin, err := os.Create(config.Default() + "/firmware.bin")
-	if err != nil {
-		return DfuFlashResponse{
-			Success: false,
-			Output:  err.Error(),
-		}
-	}
-	defer bin.Close()
-
-	_, err = io.Copy(bin, target)
-	if err != nil {
-		return DfuFlashResponse{
-			Success: false,
-			Output:  err.Error(),
+			Output:  "Failed to extract firmware file for flashing.",
 		}
 	}
 
@@ -265,5 +228,42 @@ func (app *App) FlashDfu(prefix string) DfuFlashResponse {
 	return DfuFlashResponse{
 		Success: true,
 		Output:  "",
+	}
+}
+
+// SaveFirmware saves the selected firmware file to a directory of the user's choice.
+func (a *App) SaveFirmware(prefix string) SaveFirmwareStatus {
+	location, err := wails.SaveFileDialog(a.ctx, wails.SaveDialogOptions{
+		DefaultDirectory:           xdg.UserDirs.Documents,
+		DefaultFilename:            "firmware.bin",
+		Filters:                    []wails.FileFilter{{DisplayName: "Firmware Files", Pattern: "*.bin"}},
+		ShowHiddenFiles:            false,
+		CanCreateDirectories:       true,
+		TreatPackagesAsDirectories: false,
+	})
+	if err != nil {
+		return SaveFirmwareStatus{
+			Status: 1,
+			Path:   "",
+		}
+	}
+
+	if location == "" {
+		return SaveFirmwareStatus{
+			Status: 2,
+			Path:   "",
+		}
+	}
+
+	err = copyFirmwareToFile(prefix, location)
+	if err != nil {
+		return SaveFirmwareStatus{
+			Status: 1,
+			Path:   "",
+		}
+	}
+	return SaveFirmwareStatus{
+		Status: 0,
+		Path:   location,
 	}
 }
