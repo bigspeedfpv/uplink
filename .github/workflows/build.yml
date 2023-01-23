@@ -74,6 +74,7 @@ jobs:
       - name: Move MacOS files
         run: mv uplink-latest/uplink-macos-11.zip dist/
 
+      - name: Upload Release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           title: "Latest Master Build"
