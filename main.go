@@ -34,7 +34,7 @@ func main() {
 
 	// Create application with options
 	err = wails.Run(&options.App{
-		Title:         "uplink",
+		Title:         "Uplink",
 		Width:         900,
 		Height:        600,
 		DisableResize: true,
