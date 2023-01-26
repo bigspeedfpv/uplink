@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"syscall"
 
 	"github.com/adrg/xdg"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -199,6 +200,7 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 	}
 
 	cmd := exec.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.Default()+"/firmware.bin")
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	cmd.Start()
