@@ -41,14 +41,28 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
-}
-
 // GetVersion returns the version of the application
 func (a *App) GetVersion() string {
 	return version
+}
+
+// CheckRadioConnected is periodically called and returns a boolean representing the connection status of the radio in bootloader mode.
+func (a *App) CheckRadioConnected() bool {
+	// THIS SHOULD NOT BE DONE THIS WAY, but until I find a better way to enumerate
+	// USB devices this works (and it's cross-platform!)
+	dfuUtilPath := config.DfuPath()
+
+	// list all DFU devices (lol??????)
+	cmd := exec.Command(dfuUtilPath, "-l")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// check if there's an EdgeTX radio connected (please spare me)
+	radioFound := strings.Contains(string(out), "[0483:df11]")
+
+	return radioFound
 }
 
 // FetchReleases returns all releases of EdgeTX.
@@ -179,17 +193,7 @@ func (a *App) CheckDfuAvailable() bool {
 // FlashDfu flashes the connected radio with the firmware with the given prefix.
 // DFU availability already verified with CheckDfuAvailable.
 func (a *App) FlashDfu(prefix string) DfuFlashResponse {
-	var dfuUtilPath string
-
-	if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
-		dfuUtilPath = config.Default() + "/support/win64/dfu-util.exe"
-	} else if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
-		dfuUtilPath = config.Default() + "/support/linux-amd64/dfu-util"
-	} else if runtime.GOOS == "darwin" {
-		dfuUtilPath = config.Default() + "/support/darwin/dfu-util"
-	} else {
-		dfuUtilPath = "dfu-util"
-	}
+	dfuUtilPath := config.DfuPath()
 
 	err := copyFirmwareToFile(prefix, config.Default()+"/firmware.bin")
 	if err != nil {

@@ -2,6 +2,7 @@ import { Navbar } from "@mantine/core";
 import Brand from "./Brand";
 import { IconHome, IconDeviceGamepad2, IconDeviceSdCard } from "@tabler/icons";
 import Link from "./Link";
+import RadioStatus from "./RadioStatus";
 
 const links = [
   {
@@ -36,6 +37,10 @@ function GlobalNavbar() {
             <Link key={link.label} {...link} />
           ))}
         </div>
+      </Navbar.Section>
+
+      <Navbar.Section>
+        <RadioStatus />
       </Navbar.Section>
     </Navbar>
   );

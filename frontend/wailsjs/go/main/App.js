@@ -6,6 +6,10 @@ export function CheckDfuAvailable() {
   return window['go']['main']['App']['CheckDfuAvailable']();
 }
 
+export function CheckRadioConnected() {
+  return window['go']['main']['App']['CheckRadioConnected']();
+}
+
 export function FetchReleases() {
   return window['go']['main']['App']['FetchReleases']();
 }
@@ -20,10 +24,6 @@ export function FlashDfu(arg1) {
 
 export function GetVersion() {
   return window['go']['main']['App']['GetVersion']();
-}
-
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
 }
 
 export function SaveFirmware(arg1) {
