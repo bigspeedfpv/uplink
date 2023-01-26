@@ -12,11 +12,11 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
-	"syscall"
 
 	"github.com/adrg/xdg"
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 
+	"bigspeed.me/uplink/internal/pkg/command"
 	"bigspeed.me/uplink/internal/pkg/config"
 	"github.com/google/go-github/github"
 	"golang.org/x/exp/slices"
@@ -53,7 +53,7 @@ func (a *App) CheckRadioConnected() bool {
 	dfuUtilPath := config.DfuPath()
 
 	// list all DFU devices (lol??????)
-	cmd := exec.Command(dfuUtilPath, "-l")
+	cmd := command.Command(dfuUtilPath, "-l")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(err)
@@ -203,8 +203,7 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 		}
 	}
 
-	cmd := exec.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.Default()+"/firmware.bin")
-	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	cmd := command.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.Default()+"/firmware.bin")
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	cmd.Start()
