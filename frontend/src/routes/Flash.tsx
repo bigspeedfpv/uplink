@@ -403,7 +403,7 @@ const FwItem = React.forwardRef<HTMLDivElement, FwItemProps>(
     ref
   ) => (
     <div ref={ref} {...others}>
-      <Group noWrap>
+      <Group noWrap spacing="xs">
         <Text>
           {value} "{codename}"
         </Text>
