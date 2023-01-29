@@ -2,52 +2,159 @@ import React from "react";
 
 import {
   Badge,
+  Center,
   Flex,
   Group,
+  MultiSelect,
   Select,
   Space,
   Stack,
   Stepper,
   Text,
 } from "@mantine/core";
-import { IconAdjustments } from "@tabler/icons";
+import { IconAdjustments, IconDownload, IconMapPin } from "@tabler/icons";
+
+import { FetchPacks } from "../../wailsjs/go/main/App";
+import { main as models } from "../../wailsjs/go/models";
 
 function SdCard() {
   const [page, setPage] = React.useState(0);
 
+  const [target, setTarget] = React.useState<Target>();
+  const [loadedLanguages, setLoadedLanguages] =
+    React.useState<models.Language[]>();
+  const [selectedLanguages, setSelectedLanguages] = React.useState<string[]>();
+  const [loadedScripts, setLoadedScripts] = React.useState<models.Script[]>();
+  const [selectedScripts, setSelectedScripts] = React.useState<string[]>();
+
+  // Fetch languages when page opens
+  React.useEffect(() => {
+    FetchPacks().then((r: models.FetchPacksResponse) => {
+      if (r.error) {
+        setLoadedLanguages(undefined);
+        setLoadedScripts(undefined);
+      }
+
+      console.log(r);
+
+      setLoadedLanguages(r.languages);
+      setLoadedScripts(r.scripts);
+    });
+  }, []);
+
   return (
     <Flex p="lg">
-      <Stepper active={page} w="100%">
-        <Stepper.Step
-          label="Options"
-          description="Set up your image"
-          icon={<IconAdjustments size={18} />}
-        >
-          <Space h="lg" />
-          <Select
-            label="Radio Target"
-            placeholder="Select a target..."
-            data={targets.map((target) => ({
-              value: target.name,
-              label: target.name,
-              radios: target.radios,
-              isColor: target.isColor,
-              format: target.format,
-            }))}
-            w="100%"
-            itemComponent={TargetItem}
-          />
-        </Stepper.Step>
-        <Stepper.Step
-          label="Install"
-          description="Copy to SD card"
-        ></Stepper.Step>
-      </Stepper>
+      <Stack w="100%">
+        <Center>
+          <Text size={30} weight="bold">
+            SD Card Setup
+          </Text>
+        </Center>
+        <Select
+          label="Radio Target"
+          placeholder="Select a target..."
+          data={targets.map((target) => ({
+            value: target.name,
+            label: target.name,
+            radios: target.radios,
+            isColor: target.isColor,
+            format: target.format,
+          }))}
+          w="100%"
+          itemComponent={TargetItem}
+        />
+        <MultiSelect
+          label="Voice Packs"
+          placeholder="Select your languages..."
+          data={
+            loadedLanguages?.map((language) => ({
+              value: language.directory,
+              label: language.description,
+            })) || []
+          }
+          onChange={setSelectedLanguages}
+        />
+        <MultiSelect
+          label="Scripts"
+          placeholder="Select your scripts..."
+          itemComponent={ScriptItem}
+          data={
+            loadedScripts?.map((script) => ({
+              value: script.filename,
+              label: script.name,
+              description: script.description,
+            })) || []
+          }
+          onChange={setSelectedScripts}
+        />
+      </Stack>
     </Flex>
   );
 }
 
 export default SdCard;
+
+interface TargetItemProps extends React.ComponentPropsWithoutRef<"div"> {
+  value: string;
+  label: string;
+  radios: string[];
+  isColor: boolean;
+  format: ScreenFormat;
+}
+
+const TargetItem = React.forwardRef<HTMLDivElement, TargetItemProps>(
+  (
+    { value, label, radios, isColor, format, ...others }: TargetItemProps,
+    ref
+  ) => (
+    <div ref={ref} {...others}>
+      <Stack spacing={0}>
+        <Group noWrap spacing="xs">
+          <Text size="lg" weight="bold">
+            {label}
+          </Text>
+          {isColor ? (
+            <Badge
+              variant="gradient"
+              gradient={{ from: "magenta", to: "teal.4" }}
+            >
+              Color
+            </Badge>
+          ) : (
+            <Badge variant="filled" color="gray">
+              B&W
+            </Badge>
+          )}
+          <Badge color="gray" variant="outline">
+            {format}
+          </Badge>
+        </Group>
+        <Text color="dimmed">
+          Supports {radios.join(", ").replace(/, ((?:.(?!, ))+)$/, " and $1")}
+        </Text>
+      </Stack>
+    </div>
+  )
+);
+
+interface ScriptItemProps extends React.ComponentPropsWithoutRef<"div"> {
+  value: string;
+  label: string;
+  description: string;
+}
+
+const ScriptItem = React.forwardRef<HTMLDivElement, ScriptItemProps>(
+  ({ value, label, description, ...others }: ScriptItemProps, ref) => (
+    <div ref={ref} {...others}>
+      <Stack spacing={0}>
+        <Text size="lg" weight="bold">
+          {label}
+        </Text>
+        <Text color="dimmed">{description}</Text>
+      </Stack>
+    </div>
+  )
+);
 
 enum ScreenFormat {
   Landscape = "Landscape",
@@ -117,52 +224,3 @@ const targets: Target[] = [
     radios: ["FrSky X9D Series"],
   },
 ];
-
-interface TargetItemProps extends React.ComponentPropsWithoutRef<"div"> {
-  value: string;
-  label: string;
-  radios: string[];
-  isColor: boolean;
-  format: ScreenFormat;
-}
-
-const TargetItem = React.forwardRef<HTMLDivElement, TargetItemProps>(
-  (
-    { value, label, radios, isColor, format, ...others }: TargetItemProps,
-    ref
-  ) => (
-    <div ref={ref} {...others}>
-      <Stack spacing={0}>
-        <Group noWrap spacing="xs">
-          <Text size="lg" weight="bold">
-            {label}
-          </Text>
-          {isColor ? (
-            <Badge
-              variant="gradient"
-              gradient={{ from: "magenta", to: "teal.4" }}
-            >
-              Color
-            </Badge>
-          ) : (
-            <Badge variant="filled" color="gray">
-              B&W
-            </Badge>
-          )}
-          <Badge color="gray" variant="outline">
-            {format}
-          </Badge>
-        </Group>
-        <Text color="dimmed">
-          Supports{" "}
-          {radios
-            .map((v, i) => {
-              if (i == radios.length - 1) return "and " + v;
-              else return v;
-            })
-            .join(", ")}
-        </Text>
-      </Stack>
-    </div>
-  )
-);

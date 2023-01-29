@@ -10,6 +10,10 @@ export function CheckRadioConnected() {
   return window['go']['main']['App']['CheckRadioConnected']();
 }
 
+export function FetchPacks() {
+  return window['go']['main']['App']['FetchPacks']();
+}
+
 export function FetchReleases() {
   return window['go']['main']['App']['FetchReleases']();
 }

@@ -1,5 +1,11 @@
 import React from "react";
-import { Group, Text, ThemeIcon, UnstyledButton } from "@mantine/core";
+import {
+  Group,
+  Text,
+  ThemeIcon,
+  UnstyledButton,
+  useMantineTheme,
+} from "@mantine/core";
 import { Link, useLocation } from "react-router-dom";
 
 interface LinkProps {
@@ -10,13 +16,15 @@ interface LinkProps {
 }
 
 function NavLink(props: LinkProps) {
+  const theme = useMantineTheme();
+
   const location = useLocation();
 
   return (
     <UnstyledButton
       component={Link}
       to={props.to}
-      sx={(theme) => ({
+      sx={{
         display: "block",
         width: "100%",
         padding: theme.spacing.xs,
@@ -31,7 +39,7 @@ function NavLink(props: LinkProps) {
               }).background
             : "transparent",
         boxShadow:
-          location.pathname === props.to ? theme.shadows.md : "transparent",
+          location.pathname === props.to ? theme.shadows.sm : "transparent",
 
         "&:hover": {
           backgroundColor:
@@ -40,19 +48,30 @@ function NavLink(props: LinkProps) {
                   variant: "light",
                   color: props.color,
                 }).background
-              : theme.colors.dark[6],
+              : theme.colorScheme === "dark"
+              ? theme.colors.dark[6]
+              : theme.colors.gray[1],
           boxShadow: theme.shadows.md,
         },
 
-        transition: "all 100ms ease-in-out",
-      })}
+        transition: "all 150ms",
+      }}
     >
       <Group>
         <ThemeIcon color={props.color} variant="light" size={32}>
           {props.icon}
         </ThemeIcon>
 
-        <Text size="md">{props.label}</Text>
+        <Text
+          size="md"
+          color={
+            theme.colorScheme === "dark"
+              ? theme.colors.dark[1]
+              : theme.colors.gray[7]
+          }
+        >
+          {props.label}
+        </Text>
       </Group>
     </UnstyledButton>
   );

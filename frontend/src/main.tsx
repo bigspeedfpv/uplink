@@ -16,6 +16,8 @@ import Flash from "./routes/Flash";
 import SdCard from "./routes/SdCard";
 import { CheckRadioConnected } from "../wailsjs/go/main/App";
 import { setConnection } from "./features/connection/connectionSlice";
+import { MantineProvider } from "@mantine/core";
+import { NotificationsProvider } from "@mantine/notifications";
 
 const container = document.getElementById("root");
 
@@ -56,7 +58,15 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <VersionProvider>
-        <RouterProvider router={router} />
+        <MantineProvider
+          theme={{ colorScheme: "dark" }}
+          withGlobalStyles
+          withNormalizeCSS
+        >
+          <NotificationsProvider>
+            <RouterProvider router={router} />
+          </NotificationsProvider>
+        </MantineProvider>
       </VersionProvider>
     </Provider>
   </React.StrictMode>

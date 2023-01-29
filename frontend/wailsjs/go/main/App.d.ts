@@ -6,6 +6,8 @@ export function CheckDfuAvailable():Promise<boolean>;
 
 export function CheckRadioConnected():Promise<boolean>;
 
+export function FetchPacks():Promise<main.FetchPacksResponse>;
+
 export function FetchReleases():Promise<main.FetchedReleases>;
 
 export function FetchTargets(arg1:main.ReleaseMeta):Promise<main.FetchedTargets>;
