@@ -28,7 +28,6 @@ function NavLink(props: LinkProps) {
         display: "block",
         width: "100%",
         padding: theme.spacing.xs,
-        marginBottom: theme.spacing.xs,
         borderRadius: theme.radius.sm,
         color: theme.colors.dark[0],
         backgroundColor:
