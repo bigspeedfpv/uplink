@@ -1,11 +1,17 @@
-import { Box, Space, Stack, Text } from "@mantine/core";
+import { Box, Space, Stack, Text, useMantineTheme } from "@mantine/core";
 import Link from "../components/GlobalNavbar/Link";
 import { IconDeviceGamepad2, IconDeviceSdCard } from "@tabler/icons";
 
 function Welcome() {
+  const theme = useMantineTheme();
+
   return (
     <Stack h="100%" align="center" justify="center" spacing={0}>
-      <Text size={40} weight="bold" color="white">
+      <Text
+        size={40}
+        weight="bold"
+        color={theme.colorScheme === "dark" ? "white" : "black"}
+      >
         Welcome to Uplink!
       </Text>
       <Text size="xl">What would you like to do?</Text>
