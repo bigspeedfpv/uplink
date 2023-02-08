@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Box,
+  Flex,
   Group,
   Navbar,
   Stack,
@@ -59,7 +60,7 @@ function GlobalNavbar() {
 
       <Navbar.Section>
         <RadioStatus />
-        <Group
+        <Flex
           sx={{
             borderTop: `1px solid ${
               theme.colorScheme === "dark"
@@ -69,20 +70,19 @@ function GlobalNavbar() {
           }}
           pt={8}
           align="center"
-          spacing="xs"
+          gap="xs"
         >
-          <Box sx={{ flexGrow: 100 }}>
-            <Link
-              icon={<IconSettings size={20} />}
-              color="pink"
-              label="Settings"
-              to="/settings"
-            />
-          </Box>
+          <Link
+            icon={<IconSettings size={20} />}
+            color="pink"
+            label="Settings"
+            to="/settings"
+          />
           <ActionIcon
             onClick={() => toggleColorScheme()}
             size="lg"
             variant="default"
+            sx={{ flexGrow: 0 }}
           >
             {colorScheme === "dark" ? (
               <IconSun size={16} />
@@ -90,7 +90,7 @@ function GlobalNavbar() {
               <IconMoonStars size={16} />
             )}
           </ActionIcon>
-        </Group>
+        </Flex>
       </Navbar.Section>
     </Navbar>
   );

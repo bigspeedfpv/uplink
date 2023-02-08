@@ -26,7 +26,7 @@ function NavLink(props: LinkProps) {
       to={props.to}
       sx={{
         display: "block",
-        width: "100%",
+        flexGrow: 1,
         padding: theme.spacing.xs,
         borderRadius: theme.radius.sm,
         color: theme.colors.dark[0],
