@@ -2,7 +2,10 @@ import React from "react";
 
 import {
   Badge,
+  Box,
+  Button,
   Center,
+  Checkbox,
   Flex,
   Group,
   MultiSelect,
@@ -26,6 +29,7 @@ function SdCard() {
   const [selectedLanguages, setSelectedLanguages] = React.useState<string[]>();
   const [loadedScripts, setLoadedScripts] = React.useState<models.Script[]>();
   const [selectedScripts, setSelectedScripts] = React.useState<string[]>();
+  const [dest, setDest] = React.useState<string>();
 
   // Fetch languages when page opens
   React.useEffect(() => {
@@ -41,6 +45,17 @@ function SdCard() {
       setLoadedScripts(r.scripts);
     });
   }, []);
+
+  const setTargetByName = (t: string | null) => {
+    if (!t) setTarget(undefined);
+
+    if (t) {
+      const target = targets.find((target) => target.name === t);
+      if (target) {
+        setTarget(target);
+      }
+    }
+  };
 
   return (
     <Flex p="lg">
@@ -62,31 +77,49 @@ function SdCard() {
           }))}
           w="100%"
           itemComponent={TargetItem}
+          withAsterisk
+          value={target?.name || ""}
+          onChange={(t) => setTargetByName(t)}
         />
-        <MultiSelect
-          label="Voice Packs"
-          placeholder="Select your languages..."
-          data={
-            loadedLanguages?.map((language) => ({
-              value: language.directory,
-              label: language.description,
-            })) || []
-          }
-          onChange={setSelectedLanguages}
+
+        <Select
+          label="Destination"
+          placeholder="Select a removable drive..."
+          data={["/dev/sda", "/dev/sdb", "/dev/sdc"]}
+          w="100%"
+          withAsterisk
+          onChange={(d) => setDest(d || "")}
         />
-        <MultiSelect
-          label="Scripts"
-          placeholder="Select your scripts..."
-          itemComponent={ScriptItem}
-          data={
-            loadedScripts?.map((script) => ({
-              value: script.filename,
-              label: script.name,
-              description: script.description,
-            })) || []
-          }
-          onChange={setSelectedScripts}
-        />
+
+        <Checkbox.Group
+          label="Select your sound pack(s)"
+          orientation="vertical"
+          inputContainer={CheckContainer}
+        >
+          {loadedLanguages?.map((language) => (
+            <Checkbox
+              key={language.directory}
+              value={language.directory}
+              label={language.description}
+            />
+          ))}
+        </Checkbox.Group>
+
+        <Checkbox.Group
+          label="Select your scripts"
+          orientation="vertical"
+          inputContainer={CheckContainer}
+        >
+          {loadedScripts?.map((script) => (
+            <Checkbox
+              key={script.filename}
+              value={script.filename}
+              label={script.name}
+            />
+          ))}
+        </Checkbox.Group>
+
+        <Button disabled={!target || !dest}>Install</Button>
       </Stack>
     </Flex>
   );
@@ -154,6 +187,27 @@ const ScriptItem = React.forwardRef<HTMLDivElement, ScriptItemProps>(
       </Stack>
     </div>
   )
+);
+
+const CheckContainer = (children: React.ReactNode) => (
+  <Box
+    sx={(theme) => ({
+      maxHeight: "200px",
+      overflowY: "auto",
+      padding: theme.spacing.sm,
+      paddingTop: "0",
+      borderRadius: theme.radius.sm,
+      backgroundColor:
+        theme.colorScheme === "dark" ? theme.colors.dark[7] : "#fff",
+      border: `1px solid ${
+        theme.colorScheme === "dark"
+          ? theme.colors.dark[6]
+          : theme.colors.gray[4]
+      }`,
+    })}
+  >
+    {children}
+  </Box>
 );
 
 enum ScreenFormat {
