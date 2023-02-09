@@ -37,6 +37,10 @@ func main() {
 		Title:         "Uplink",
 		Width:         900,
 		Height:        600,
+		MinWidth:      900,
+		MinHeight:     600,
+		MaxWidth:      900,
+		MaxHeight:     600,
 		DisableResize: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
