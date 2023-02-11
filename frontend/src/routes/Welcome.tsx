@@ -16,7 +16,19 @@ function Welcome() {
       </Text>
       <Text size="xl">What would you like to do?</Text>
       <Space h="lg" />
-      <Box>
+      <Box
+        sx={{
+          border: `1px solid ${
+            theme.colorScheme === "dark"
+              ? theme.colors.dark[6]
+              : theme.colors.gray[4]
+          }`,
+          borderRadius: theme.radius.md,
+          padding: theme.spacing.xs,
+          backgroundColor:
+            theme.colorScheme === "dark" ? theme.colors.dark[7] : "#fff",
+        }}
+      >
         <Link
           icon={<IconDeviceGamepad2 size={20} />}
           color="cyan"
