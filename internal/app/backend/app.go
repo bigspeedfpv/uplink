@@ -1,4 +1,6 @@
-package main
+// Package backend contains all logic for the backend of the app.
+// Methods in backend are called from the frontend/web view.
+package backend
 
 import (
 	"context"
@@ -23,7 +25,7 @@ func NewApp() *App {
 
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
+func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 

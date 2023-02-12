@@ -9,11 +9,22 @@ import {
 import GlobalNavbar from "../components/GlobalNavbar";
 import { Outlet } from "react-router-dom";
 import { NotificationsProvider } from "@mantine/notifications";
+import { SetDarkMode } from "../../wailsjs/go/backend/App";
+import { ConfigContext } from "../context/config.context";
 
 function Root() {
-  const [colorScheme, setColorScheme] = React.useState<ColorScheme>("dark");
-  const toggleColorScheme = () =>
+  const config = React.useContext(ConfigContext);
+  const [colorScheme, setColorScheme] = React.useState<ColorScheme>(
+    config.dark ? "dark" : "light"
+  );
+  const toggleColorScheme = () => {
     setColorScheme(colorScheme === "dark" ? "light" : "dark");
+  };
+
+  // Update config.json on dark mode toggle
+  React.useEffect(() => {
+    SetDarkMode(colorScheme === "dark");
+  }, [colorScheme]);
 
   return (
     <ColorSchemeProvider

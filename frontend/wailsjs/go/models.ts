@@ -1,4 +1,4 @@
-export namespace main {
+export namespace backend {
 	
 	export class DfuFlashResponse {
 	    success: boolean;
@@ -227,6 +227,25 @@ export namespace main {
 	    }
 	}
 	
+
+}
+
+export namespace config {
+	
+	export class Config {
+	    dark: boolean;
+	    expert: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Config(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.dark = source["dark"];
+	        this.expert = source["expert"];
+	    }
+	}
 
 }
 

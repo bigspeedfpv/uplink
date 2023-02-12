@@ -14,8 +14,9 @@ import "./assets/main.css";
 import Welcome from "./routes/Welcome";
 import Flash from "./routes/Flash";
 import SdCard from "./routes/SdCard";
-import { CheckDfuStatus } from "../wailsjs/go/main/App";
+import { CheckDfuStatus } from "../wailsjs/go/backend/App";
 import { setDfuStatus } from "./features/connection/dfuSlice";
+import { ConfigProvider } from "./context/config.context";
 
 const container = document.getElementById("root");
 
@@ -55,9 +56,11 @@ setInterval(() => {
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <VersionProvider>
-        <RouterProvider router={router} />
-      </VersionProvider>
+      <ConfigProvider>
+        <VersionProvider>
+          <RouterProvider router={router} />
+        </VersionProvider>
+      </ConfigProvider>
     </Provider>
   </React.StrictMode>
 );

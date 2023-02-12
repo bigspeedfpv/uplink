@@ -17,8 +17,8 @@ import {
 } from "@mantine/core";
 import { IconAdjustments, IconDownload, IconMapPin } from "@tabler/icons";
 
-import { FetchPacks } from "../../wailsjs/go/main/App";
-import { main as models } from "../../wailsjs/go/models";
+import { FetchPacks } from "../../wailsjs/go/backend/App";
+import { backend as models } from "../../wailsjs/go/models";
 
 function SdCard() {
   const [page, setPage] = React.useState(0);

@@ -23,6 +23,11 @@ func DefaultDir() string {
 	return xdg.ConfigHome + "/uplink"
 }
 
+// defaultConfig returns the default values for a config struct.
+func defaultConfig() Config {
+	return Config{Dark: true, Expert: false}
+}
+
 // DfuPath returns the correct path to dfu-util for the current OS.
 func DfuPath() string {
 	var dfuUtilPath string
@@ -42,23 +47,25 @@ func DfuPath() string {
 }
 
 // ReadConfig reads config.json from the Uplink directory
-func ReadConfig() (Config, error) {
+func ReadConfig() Config {
 	var config Config
 
 	// Read config.json
 	configFile, err := os.Open(DefaultDir() + "/config.json")
 	if err != nil {
-		return config, err
+		createConfig()
+		return defaultConfig()
 	}
 	defer configFile.Close()
 
 	// Parse config.json
 	jsonParser := json.NewDecoder(configFile)
 	if err = jsonParser.Decode(&config); err != nil {
-		return config, err
+		createConfig()
+		return defaultConfig()
 	}
 
-	return config, nil
+	return config
 }
 
 // WriteConfig writes the passed config object to config.json.
@@ -75,6 +82,17 @@ func WriteConfig(config Config) error {
 	jsonEncoder := json.NewEncoder(configFile)
 	jsonEncoder.SetIndent("", "    ")
 	if err = jsonEncoder.Encode(config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// createConfig creates a default config.json file.
+// Used when ReadConfig() fails to find a config.json file.
+func createConfig() error {
+	// Write default config
+	if err := WriteConfig(defaultConfig()); err != nil {
 		return err
 	}
 

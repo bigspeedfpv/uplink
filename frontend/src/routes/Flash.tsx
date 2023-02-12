@@ -30,7 +30,7 @@ import {
   FlashDfu,
   SaveFirmware,
 } from "../../wailsjs/go/backend/App";
-import { main as models } from "../../wailsjs/go/models";
+import { backend as models } from "../../wailsjs/go/models";
 import { showNotification } from "@mantine/notifications";
 
 function Flash() {

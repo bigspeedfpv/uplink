@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 
+	"bigspeed.me/uplink/internal/app/backend"
 	"bigspeed.me/uplink/internal/pkg/config"
 	"github.com/joho/godotenv"
 	"github.com/soypat/rebed"
@@ -30,7 +31,7 @@ func main() {
 	rebed.Patch(supportFiles, config.DefaultDir())
 
 	// Create an instance of the app structure
-	app := NewApp()
+	app := backend.NewApp()
 
 	// Create application with options
 	err = wails.Run(&options.App{
@@ -46,7 +47,7 @@ func main() {
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.startup,
+		OnStartup:        app.Startup,
 		Bind: []interface{}{
 			app,
 		},

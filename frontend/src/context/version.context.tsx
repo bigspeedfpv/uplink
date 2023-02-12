@@ -1,5 +1,5 @@
 import React from "react";
-import { GetVersion } from "../../wailsjs/go/main/App";
+import { GetVersion } from "../../wailsjs/go/backend/App";
 
 export const VersionContext = React.createContext("");
 let version: string = "develop";
