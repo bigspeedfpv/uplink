@@ -4,6 +4,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 
@@ -26,14 +27,15 @@ func DefaultDir() string {
 func DfuPath() string {
 	var dfuUtilPath string
 
-	if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
+	// first, check if dfu is installed globally
+	if _, err := exec.LookPath("dfu-util"); err == nil {
+		dfuUtilPath = "dfu-util"
+	} else if runtime.GOOS == "windows" && runtime.GOARCH == "amd64" {
 		dfuUtilPath = filepath.Join(DefaultDir(), "support", "win64", "dfu-util.exe")
 	} else if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
 		dfuUtilPath = filepath.Join(DefaultDir(), "support", "linux-amd64", "dfu-util")
 	} else if runtime.GOOS == "darwin" {
 		dfuUtilPath = filepath.Join(DefaultDir(), "support", "darwin", "dfu-util")
-	} else {
-		dfuUtilPath = "dfu-util"
 	}
 
 	return dfuUtilPath
