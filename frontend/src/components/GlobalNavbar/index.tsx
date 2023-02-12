@@ -51,7 +51,7 @@ function GlobalNavbar() {
         <Brand />
       </Navbar.Section>
       <Navbar.Section grow mt="md">
-        <Stack>
+        <Stack spacing="xs">
           {links.map((link) => (
             <Link key={link.label} {...link} />
           ))}
