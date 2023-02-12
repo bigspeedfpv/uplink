@@ -88,7 +88,7 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 	defer resp.Body.Close()
 
 	// Write response body to firmware.zip
-	fwZip, err := os.Create(config.Default() + "/firmware.zip")
+	fwZip, err := os.Create(config.DefaultDir() + "/firmware.zip")
 	if err != nil {
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
@@ -97,7 +97,7 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 	io.Copy(fwZip, resp.Body)
 
 	// ...and read BACK from the zip
-	read, err := zip.OpenReader(config.Default() + "/firmware.zip")
+	read, err := zip.OpenReader(config.DefaultDir() + "/firmware.zip")
 	if err != nil {
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
@@ -154,7 +154,7 @@ func (a *App) CheckDfuAvailable() bool {
 func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 	dfuUtilPath := config.DfuPath()
 
-	err := copyFirmwareToFile(prefix, config.Default()+"/firmware.bin")
+	err := copyFirmwareToFile(prefix, config.DefaultDir()+"/firmware.bin")
 	if err != nil {
 		return DfuFlashResponse{
 			Success: false,
@@ -162,7 +162,7 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 		}
 	}
 
-	cmd := command.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.Default()+"/firmware.bin")
+	cmd := command.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.DefaultDir()+"/firmware.bin")
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	cmd.Start()
@@ -295,7 +295,7 @@ func filter[T any](s []T, fn func(T) bool) []T {
 // copyFirmwareToFile copies the firmware bin from the zip to the passed directory.
 func copyFirmwareToFile(prefix string, location string) error {
 	// Open artifact zip for reading
-	read, err := zip.OpenReader(config.Default() + "/firmware.zip")
+	read, err := zip.OpenReader(config.DefaultDir() + "/firmware.zip")
 	if err != nil {
 		return err
 	}

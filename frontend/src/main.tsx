@@ -14,8 +14,8 @@ import "./assets/main.css";
 import Welcome from "./routes/Welcome";
 import Flash from "./routes/Flash";
 import SdCard from "./routes/SdCard";
-import { CheckRadioConnected } from "../wailsjs/go/main/App";
-import { setConnection } from "./features/connection/connectionSlice";
+import { CheckDfuStatus } from "../wailsjs/go/main/App";
+import { setDfuStatus } from "./features/connection/dfuSlice";
 
 const container = document.getElementById("root");
 
@@ -42,13 +42,13 @@ const router = createHashRouter([
   },
 ]);
 
-CheckRadioConnected().then((connected) => {
-  store.dispatch(setConnection(connected));
+CheckDfuStatus().then((status) => {
+  store.dispatch(setDfuStatus(status));
 });
 
 setInterval(() => {
-  CheckRadioConnected().then((connected) => {
-    store.dispatch(setConnection(connected));
+  CheckDfuStatus().then((status) => {
+    store.dispatch(setDfuStatus(status));
   });
 }, 2500);
 

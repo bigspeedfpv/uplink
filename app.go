@@ -32,8 +32,11 @@ func (a *App) GetVersion() string {
 	return version
 }
 
-// CheckRadioConnected is periodically called and returns a boolean representing the connection status of the radio in bootloader mode.
-func (a *App) CheckRadioConnected() bool {
+// CheckDfuStatus is periodically called and returns an int representing the connection status of the radio in bootloader mode.
+// 0 = dfu-util not found or not executable
+// 1 = radio not found
+// 2 = radio found
+func (a *App) CheckDfuStatus() int {
 	// THIS SHOULD NOT BE DONE THIS WAY, but until I find a better way to enumerate
 	// USB devices this works (and it's cross-platform!)
 	dfuUtilPath := config.DfuPath()
@@ -43,10 +46,14 @@ func (a *App) CheckRadioConnected() bool {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(err)
+		return 0
 	}
 
 	// check if there's an EdgeTX radio connected (please spare me)
 	radioFound := strings.Contains(string(out), "[0483:df11]")
+	if !radioFound {
+		return 1
+	}
 
-	return radioFound
+	return 2
 }

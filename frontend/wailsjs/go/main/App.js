@@ -6,8 +6,8 @@ export function CheckDfuAvailable() {
   return window['go']['main']['App']['CheckDfuAvailable']();
 }
 
-export function CheckRadioConnected() {
-  return window['go']['main']['App']['CheckRadioConnected']();
+export function CheckDfuStatus() {
+  return window['go']['main']['App']['CheckDfuStatus']();
 }
 
 export function FetchPacks() {

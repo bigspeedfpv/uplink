@@ -4,7 +4,7 @@ import {main} from '../models';
 
 export function CheckDfuAvailable():Promise<boolean>;
 
-export function CheckRadioConnected():Promise<boolean>;
+export function CheckDfuStatus():Promise<number>;
 
 export function FetchPacks():Promise<main.FetchPacksResponse>;
 

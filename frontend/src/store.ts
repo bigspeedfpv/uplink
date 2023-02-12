@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import connectionReducer from "./features/connection/connectionSlice";
+import connectionReducer from "./features/connection/dfuSlice";
 
 export const store = configureStore({
   reducer: {

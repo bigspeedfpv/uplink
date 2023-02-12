@@ -27,7 +27,7 @@ func main() {
 	}
 
 	// If the config directory doesn't already contain the support files, unpack them
-	rebed.Patch(supportFiles, config.Default())
+	rebed.Patch(supportFiles, config.DefaultDir())
 
 	// Create an instance of the app structure
 	app := NewApp()
