@@ -29,7 +29,7 @@ import {
   FetchTargets,
   FlashDfu,
   SaveFirmware,
-} from "../../wailsjs/go/main/App";
+} from "../../wailsjs/go/backend/App";
 import { main as models } from "../../wailsjs/go/models";
 import { showNotification } from "@mantine/notifications";
 
@@ -189,7 +189,7 @@ function Flash() {
               {(styles) => (
                 <div style={styles}>
                   <Space h="md" />
-                  <Card shadow="md" h={285} sx={{ overflowY: "auto" }}>
+                  <Card shadow="md" h={282} sx={{ overflowY: "auto" }}>
                     <Group>
                       <Text size={25} weight="bold">
                         EdgeTX {fwVersion!.value} Release Notes
