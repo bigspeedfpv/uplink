@@ -27,7 +27,9 @@ function RadioStatus() {
       setTooltipMessage(
         `dfu-util not found! Please ensure you have execute permissions for Uplink's dfu-util binary or install dfu-util globally with your package manager.`
       );
-      setColor(theme.colors.red[4]);
+      setColor(
+        theme.colorScheme === "dark" ? theme.colors.red[4] : theme.colors.red[6]
+      );
     } else if (dfuStatus === 1) {
       setMessage("Radio Disconnected");
       setTooltipMessage(
@@ -39,7 +41,11 @@ function RadioStatus() {
       setTooltipMessage(
         "Your radio is connected in DFU mode! You can now flash your radio."
       );
-      setColor(theme.colors.teal[4]);
+      setColor(
+        theme.colorScheme === "dark"
+          ? theme.colors.teal[4]
+          : theme.colors.teal[6]
+      );
     }
   }, [dfuStatus]);
 
