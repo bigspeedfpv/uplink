@@ -277,13 +277,17 @@ function Flash() {
                   <Card
                     radius="lg"
                     sx={(theme) => ({
+                      boxShadow: dfuStatus === 2 && theme.shadows.sm,
                       backgroundColor:
                         dfuStatus === 2
                           ? theme.fn.variant({
                               variant: "light",
                               color: "blue",
                             }).background
-                          : theme.colors.dark[4],
+                          : theme.fn.variant({
+                              variant: "subtle",
+                              color: "gray",
+                            }).color,
                       color:
                         dfuStatus === 2
                           ? theme.fn.variant({
@@ -313,12 +317,13 @@ function Flash() {
                   <Card
                     radius="lg"
                     sx={(theme) => ({
+                      boxShadow: theme.shadows.sm,
                       "&:hover": {
                         boxShadow: theme.shadows.lg,
-                        backgroundColor: theme.colors.dark[5],
-                      },
-                      "&:active": {
-                        backgroundColor: theme.colors.dark[6],
+                        backgroundColor:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[5]
+                            : theme.colors.gray[1],
                       },
                       transition: "all 0.2s ease",
                     })}
@@ -333,27 +338,32 @@ function Flash() {
                 </UnstyledButton>
               </Group>
             </Center>
-            <Group spacing={4} position="center">
-              <IconInfoCircle
-                size={20}
-                color={
-                  theme.colorScheme === "dark"
-                    ? theme.colors.red[4]
-                    : theme.colors.red[6]
-                }
-              />
-              <Text
-                size="sm"
-                color={
-                  theme.colorScheme === "dark"
-                    ? theme.colors.red[4]
-                    : theme.colors.red[6]
-                }
-              >
-                Flashing is disabled because no radio is detected.
-              </Text>
-            </Group>
-            <Space h="sm" />
+
+            {dfuStatus !== 2 && (
+              <>
+                <Group spacing={4} position="center">
+                  <IconInfoCircle
+                    size={20}
+                    color={
+                      theme.colorScheme === "dark"
+                        ? theme.colors.red[4]
+                        : theme.colors.red[6]
+                    }
+                  />
+                  <Text
+                    size="sm"
+                    color={
+                      theme.colorScheme === "dark"
+                        ? theme.colors.red[4]
+                        : theme.colors.red[6]
+                    }
+                  >
+                    Flashing is disabled because no radio is detected.
+                  </Text>
+                </Group>
+                <Space h="sm" />
+              </>
+            )}
           </Stepper.Step>
 
           <Stepper.Completed>
