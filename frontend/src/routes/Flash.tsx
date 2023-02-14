@@ -14,12 +14,15 @@ import {
   Stack,
   Stepper,
   Text,
+  Tooltip,
   Transition,
   UnstyledButton,
+  useMantineTheme,
 } from "@mantine/core";
 import {
   IconDownload,
   IconGitBranch,
+  IconInfoCircle,
   IconTargetArrow,
   IconUsb,
 } from "@tabler/icons";
@@ -32,8 +35,12 @@ import {
 } from "../../wailsjs/go/backend/App";
 import { backend as models } from "../../wailsjs/go/models";
 import { showNotification } from "@mantine/notifications";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
 
 function Flash() {
+  const theme = useMantineTheme();
+
   const [page, setPage] = React.useState(0);
   const [enableNext, setEnableNext] = React.useState(false);
 
@@ -51,6 +58,8 @@ function Flash() {
     React.useState<models.DfuFlashResponse>();
 
   const [flashing, setFlashing] = React.useState(false);
+
+  const dfuStatus = useSelector((state: RootState) => state.connection.value);
 
   const nextPage = () => setPage(page + 1);
   const prevPage = () => setPage(page - 1);
@@ -264,24 +273,30 @@ function Flash() {
           >
             <Center h={375}>
               <Group spacing={32}>
-                <UnstyledButton onClick={flashRadio}>
+                <UnstyledButton onClick={flashRadio} disabled={dfuStatus !== 2}>
                   <Card
                     radius="lg"
                     sx={(theme) => ({
-                      backgroundColor: theme.fn.variant({
-                        variant: "light",
-                        color: "blue",
-                      }).background,
-                      color: theme.fn.variant({
-                        variant: "light",
-                        color: "blue",
-                      }).color,
-                      "&:hover": {
+                      backgroundColor:
+                        dfuStatus === 2
+                          ? theme.fn.variant({
+                              variant: "light",
+                              color: "blue",
+                            }).background
+                          : theme.colors.dark[4],
+                      color:
+                        dfuStatus === 2
+                          ? theme.fn.variant({
+                              variant: "light",
+                              color: "blue",
+                            }).color
+                          : theme.colors.dark[5],
+                      "&:hover": dfuStatus === 2 && {
                         boxShadow: theme.shadows.lg,
-                        backgroundColor: theme.colors.dark[5],
-                      },
-                      "&:active": {
-                        backgroundColor: theme.colors.dark[6],
+                        backgroundColor: theme.fn.variant({
+                          variant: "light",
+                          color: "blue",
+                        }).hover,
                       },
                       transition: "all 0.2s ease",
                     })}
@@ -318,6 +333,27 @@ function Flash() {
                 </UnstyledButton>
               </Group>
             </Center>
+            <Group spacing={4} position="center">
+              <IconInfoCircle
+                size={20}
+                color={
+                  theme.colorScheme === "dark"
+                    ? theme.colors.red[4]
+                    : theme.colors.red[6]
+                }
+              />
+              <Text
+                size="sm"
+                color={
+                  theme.colorScheme === "dark"
+                    ? theme.colors.red[4]
+                    : theme.colors.red[6]
+                }
+              >
+                Flashing is disabled because no radio is detected.
+              </Text>
+            </Group>
+            <Space h="sm" />
           </Stepper.Step>
 
           <Stepper.Completed>
