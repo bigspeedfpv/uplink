@@ -17,6 +17,7 @@ import SdCard from "./routes/SdCard";
 import { CheckDfuStatus } from "../wailsjs/go/backend/App";
 import { setDfuStatus } from "./features/connection/dfuSlice";
 import { ConfigProvider } from "./context/config.context";
+import Settings from "./routes/Settings";
 
 const container = document.getElementById("root");
 
@@ -38,6 +39,10 @@ const router = createHashRouter([
       {
         path: "sdcard",
         element: <SdCard />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
       },
     ],
   },
