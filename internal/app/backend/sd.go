@@ -35,14 +35,17 @@ func getAndUnmarshalTo[T any](url string, v *T) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	json.Unmarshal(body, &v)
+	err = json.Unmarshal(body, &v)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
