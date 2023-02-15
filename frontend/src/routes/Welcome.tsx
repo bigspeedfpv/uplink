@@ -1,6 +1,8 @@
+import React from "react";
+
 import { Box, Space, Stack, Text, useMantineTheme } from "@mantine/core";
-import Link from "../components/GlobalNavbar/Link";
 import { IconDeviceGamepad2, IconDeviceSdCard } from "@tabler/icons";
+import Link from "../components/GlobalNavbar/Link";
 
 function Welcome() {
   const theme = useMantineTheme();

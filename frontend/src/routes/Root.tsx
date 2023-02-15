@@ -6,9 +6,9 @@ import {
   ColorSchemeProvider,
   MantineProvider,
 } from "@mantine/core";
-import GlobalNavbar from "../components/GlobalNavbar";
 import { Outlet } from "react-router-dom";
 import { NotificationsProvider } from "@mantine/notifications";
+import GlobalNavbar from "../components/GlobalNavbar";
 import { SetDarkMode } from "../../wailsjs/go/backend/App";
 import { ConfigContext } from "../context/config.context";
 

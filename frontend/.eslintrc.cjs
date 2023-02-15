@@ -7,10 +7,17 @@ module.exports = {
   overrides: [],
   parserOptions: {
     ecmaVersion: "latest",
-    project: "frontend/tsconfig.json",
+    project: "tsconfig.json",
     tsConfigRootDir: __dirname,
     sourceType: "module"
   },
   plugins: ["react", "prettier"],
-  rules: {}
+  rules: {
+    'no-param-reassign': ['error', {
+      props: true,
+      ignorePropertyModificationsFor: [
+        'state',
+      ]
+    }],
+  }
 };

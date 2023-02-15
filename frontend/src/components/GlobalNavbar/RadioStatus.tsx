@@ -1,7 +1,6 @@
 import React from "react";
 
 import { useSelector } from "react-redux";
-import { RootState } from "../../store";
 
 import {
   Group,
@@ -11,6 +10,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconAlertOctagon, IconDeviceGamepad2 } from "@tabler/icons";
+import { RootState } from "../../store";
 
 function RadioStatus() {
   const theme = useMantineTheme();
@@ -62,7 +62,7 @@ function RadioStatus() {
           variant="outline"
           sx={{
             border: "none",
-            color: color,
+            color,
           }}
         >
           {dfuStatus === 0 ? (

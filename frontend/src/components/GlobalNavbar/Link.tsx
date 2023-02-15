@@ -17,6 +17,8 @@ interface LinkProps {
 }
 
 function NavLink(props: LinkProps) {
+  const { icon, color, label, to } = props;
+
   const theme = useMantineTheme();
 
   const location = useLocation();
@@ -24,8 +26,8 @@ function NavLink(props: LinkProps) {
   return (
     <UnstyledButton
       component={Link}
-      onClick={() => CreateLogEntry("Nav", `Clicked on ${props.label}`)}
-      to={props.to}
+      onClick={() => CreateLogEntry("Nav", `Clicked on ${label}`)}
+      to={to}
       sx={{
         display: "block",
         width: "100%",
@@ -33,21 +35,22 @@ function NavLink(props: LinkProps) {
         borderRadius: theme.radius.sm,
         color: theme.colors.dark[0],
         backgroundColor:
-          location.pathname === props.to
+          location.pathname === to
             ? theme.fn.variant({
                 variant: "light",
-                color: props.color,
+                color,
               }).background
             : "transparent",
-        boxShadow:
-          location.pathname === props.to ? theme.shadows.sm : "transparent",
+        boxShadow: location.pathname === to ? theme.shadows.sm : "transparent",
 
         "&:hover": {
           backgroundColor:
-            location.pathname === props.to
+            // this line makes me cry every time i open this file
+            // eslint-disable-next-line no-nested-ternary
+            location.pathname === to
               ? theme.fn.variant({
                   variant: "light",
-                  color: props.color,
+                  color,
                 }).background
               : theme.colorScheme === "dark"
               ? theme.colors.dark[6]
@@ -59,8 +62,8 @@ function NavLink(props: LinkProps) {
       }}
     >
       <Group>
-        <ThemeIcon color={props.color} variant="light" size={32}>
-          {props.icon}
+        <ThemeIcon color={color} variant="light" size={32}>
+          {icon}
         </ThemeIcon>
 
         <Text
@@ -71,7 +74,7 @@ function NavLink(props: LinkProps) {
               : theme.colors.gray[7]
           }
         >
-          {props.label}
+          {label}
         </Text>
       </Group>
     </UnstyledButton>

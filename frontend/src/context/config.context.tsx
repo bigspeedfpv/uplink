@@ -9,7 +9,6 @@ export const ConfigContext = React.createContext({
 
 let config: models.Config;
 LoadConfig().then((c) => {
-  console.log(`Loaded config: ${JSON.stringify(c)}`);
   config = c;
 });
 
@@ -17,8 +16,8 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const ConfigProvider = ({ children }: Props) => {
+export function ConfigProvider({ children }: Props) {
   return (
     <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
   );
-};
+}

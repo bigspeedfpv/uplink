@@ -13,7 +13,7 @@ function Brand() {
 
   return (
     <Box
-      sx={(theme) => ({
+      sx={{
         paddingLeft: theme.spacing.xs,
         paddingRight: theme.spacing.xs,
         paddingBottom: theme.spacing.lg,
@@ -22,7 +22,7 @@ function Brand() {
             ? theme.colors.dark[4]
             : theme.colors.gray[2]
         }`,
-      })}
+      }}
     >
       <Group position="apart">
         <img

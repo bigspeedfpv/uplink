@@ -14,7 +14,6 @@ import {
   Stack,
   Stepper,
   Text,
-  Tooltip,
   Transition,
   UnstyledButton,
   useMantineTheme,
@@ -27,17 +26,17 @@ import {
   IconUsb,
 } from "@tabler/icons";
 import ReactMarkdown from "react-markdown";
+import { showNotification } from "@mantine/notifications";
+import { useSelector } from "react-redux";
 import {
-  CreateLogEntry,
   FetchReleases,
   FetchTargets,
   FlashDfu,
   SaveFirmware,
-} from "../../wailsjs/go/backend/App";
-import { backend as models } from "../../wailsjs/go/models";
-import { showNotification } from "@mantine/notifications";
-import { useSelector } from "react-redux";
-import { RootState } from "../store";
+} from "../../../wailsjs/go/backend/App";
+import { backend as models } from "../../../wailsjs/go/models";
+import { RootState } from "../../store";
+import { colorTargets, FwItem } from "./helpers";
 
 function Flash() {
   const theme = useMantineTheme();
@@ -90,7 +89,6 @@ function Flash() {
       if (targetsLoaded) return;
 
       FetchTargets(fwVersion!).then((targets: models.FetchedTargets) => {
-        console.log(targets);
         setFetchedTargets(targets);
         setTargetsLoaded(true);
       });
@@ -104,18 +102,14 @@ function Flash() {
     if (!tag) return undefined;
 
     // Fetch the release with the selected tag (Select returns a string)
-    return fetchedReleases.releases.find((release) => {
-      return release.value == tag;
-    });
+    return fetchedReleases.releases.find((release) => release.value === tag);
   };
 
   const fetchTargetByName = (name: string | null) => {
     if (!name) return undefined;
 
     // Fetch the target with the selected name (Select returns a string)
-    return fetchedTargets.targets.find((target) => {
-      return target.label == name;
-    });
+    return fetchedTargets.targets.find((target) => target.label === name);
   };
 
   const flashRadio = () => {
@@ -129,13 +123,13 @@ function Flash() {
 
   const saveFirmware = () => {
     SaveFirmware(fwTarget!.prefix).then((s) => {
-      if (s.status == 0) {
+      if (s.status === 0) {
         showNotification({
           title: "Firmware saved!",
           message: `Firmware saved at ${s.path}.`,
           color: "green",
         });
-      } else if (s.status == 2) {
+      } else if (s.status === 2) {
         showNotification({
           title: "Firmware save cancelled.",
           message: "You can still flash the radio.",
@@ -206,7 +200,7 @@ function Flash() {
                         <Badge variant="outline">Latest</Badge>
                       )}
                     </Group>
-                    <ReactMarkdown children={fwVersion!.releaseNotes} />
+                    <ReactMarkdown>{fwVersion!.releaseNotes}</ReactMarkdown>
                   </Card>
                 </div>
               )}
@@ -275,7 +269,7 @@ function Flash() {
                 <UnstyledButton onClick={flashRadio} disabled={dfuStatus !== 2}>
                   <Card
                     radius="lg"
-                    sx={(theme) => ({
+                    sx={{
                       boxShadow: dfuStatus === 2 ? theme.shadows.sm : "",
                       backgroundColor:
                         dfuStatus === 2
@@ -302,7 +296,7 @@ function Flash() {
                         }).hover,
                       },
                       transition: "all 0.2s ease",
-                    })}
+                    }}
                   >
                     <Stack w={200} h={200} align="center" justify="center">
                       <IconUsb size={96} />
@@ -315,7 +309,7 @@ function Flash() {
                 <UnstyledButton onClick={saveFirmware}>
                   <Card
                     radius="lg"
-                    sx={(theme) => ({
+                    sx={{
                       boxShadow: theme.shadows.sm,
                       "&:hover": {
                         boxShadow: theme.shadows.lg,
@@ -325,7 +319,7 @@ function Flash() {
                             : theme.colors.gray[1],
                       },
                       transition: "all 0.2s ease",
-                    })}
+                    }}
                   >
                     <Stack w={200} h={200} align="center" justify="center">
                       <IconDownload size={96} />
@@ -406,7 +400,7 @@ function Flash() {
         closeOnClickOutside={false}
         closeOnEscape={false}
         opened={flashing}
-        centered={true}
+        centered
         onClose={() => {}}
         transitionDuration={300}
         radius="md"
@@ -419,7 +413,7 @@ function Flash() {
             </Text>
           </Group>
           <Text size="lg" align="center">
-            This may take a while; we'll let you know when it's done.{" "}
+            This may take a while; we&apos;ll let you know when it&apos;s done.{" "}
             <strong>Do not unplug your radio or close Uplink!</strong>
           </Text>
         </Stack>
@@ -429,42 +423,3 @@ function Flash() {
 }
 
 export default Flash;
-
-interface FwItemProps
-  extends React.ComponentPropsWithoutRef<"div">,
-    models.ReleaseMeta {}
-
-const FwItem = React.forwardRef<HTMLDivElement, FwItemProps>(
-  (
-    {
-      value,
-      codename,
-      latest,
-      releaseNotes,
-      browserDownloadUrl,
-      date,
-      ...others
-    }: FwItemProps,
-    ref
-  ) => (
-    <div ref={ref} {...others}>
-      <Group noWrap spacing="xs">
-        <Text>
-          {value} "{codename}"
-        </Text>
-        {latest && <Badge>Latest</Badge>}
-      </Group>
-    </div>
-  )
-);
-
-const colorTargets = [
-  "el18-",
-  "nv14-",
-  "x10-",
-  "x10-access-",
-  "x12s-",
-  "t16-",
-  "t18-",
-  "tx16s-",
-];

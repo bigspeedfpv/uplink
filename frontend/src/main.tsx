@@ -13,7 +13,7 @@ import Root from "./routes/Root";
 import "./assets/main.css";
 import Welcome from "./routes/Welcome";
 import Flash from "./routes/Flash";
-import SdCard from "./routes/SdCard";
+import Index from "./routes/SdCard";
 import { CheckDfuStatus } from "../wailsjs/go/backend/App";
 import { setDfuStatus } from "./features/connection/dfuSlice";
 import { ConfigProvider } from "./context/config.context";
@@ -38,7 +38,7 @@ const router = createHashRouter([
       },
       {
         path: "sdcard",
-        element: <SdCard />,
+        element: <Index />,
       },
       {
         path: "settings",

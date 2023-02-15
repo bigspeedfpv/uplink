@@ -1,14 +1,13 @@
+import React from "react";
+
 import {
   ActionIcon,
-  Box,
   Flex,
-  Group,
   Navbar,
   Stack,
   useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
-import Brand from "./Brand";
 import {
   IconHome,
   IconDeviceGamepad2,
@@ -17,6 +16,7 @@ import {
   IconSun,
   IconMoonStars,
 } from "@tabler/icons";
+import Brand from "./Brand";
 import Link from "./Link";
 import RadioStatus from "./RadioStatus";
 
@@ -53,7 +53,13 @@ function GlobalNavbar() {
       <Navbar.Section grow mt="md">
         <Stack spacing="xs">
           {links.map((link) => (
-            <Link key={link.label} {...link} />
+            <Link
+              key={link.label}
+              icon={link.icon}
+              color={link.color}
+              label={link.color}
+              to={link.to}
+            />
           ))}
         </Stack>
       </Navbar.Section>
