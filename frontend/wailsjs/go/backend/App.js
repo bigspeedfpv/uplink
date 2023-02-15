@@ -49,3 +49,7 @@ export function SaveFirmware(arg1) {
 export function SetDarkMode(arg1) {
   return window['go']['backend']['App']['SetDarkMode'](arg1);
 }
+
+export function SetExpertMode(arg1) {
+  return window['go']['backend']['App']['SetExpertMode'](arg1);
+}

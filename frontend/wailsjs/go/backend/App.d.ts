@@ -26,3 +26,5 @@ export function LoadConfig():Promise<config.Config>;
 export function SaveFirmware(arg1:string):Promise<backend.SaveFirmwareStatus>;
 
 export function SetDarkMode(arg1:boolean):Promise<void>;
+
+export function SetExpertMode(arg1:boolean):Promise<void>;

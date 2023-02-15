@@ -8,18 +8,24 @@ import (
 
 // FetchPacks downloads the sounds.json and scripts.json files from the EdgeTX repo and returns the list of packs.
 func (a *App) FetchPacks() FetchPacksResponse {
+	a.CreateLogEntry("SD", "Fetching packs...")
+
 	var languages []Language
 	var scripts []Script
 
 	err := getAndUnmarshalTo("https://github.com/EdgeTX/edgetx-sdcard-sounds/releases/download/latest/sounds.json", &languages)
 	if err != nil {
+		a.CreateLogEntry("SD", "Error fetching language packs: "+err.Error())
 		return FetchPacksResponse{nil, nil, &ErrorWrapper{err.Error()}}
 	}
 
 	getAndUnmarshalTo("https://github.com/EdgeTX/lua-scripts/releases/download/latest/scripts.json", &scripts)
 	if err != nil {
+		a.CreateLogEntry("SD", "Error fetching scripts: "+err.Error())
 		return FetchPacksResponse{nil, nil, &ErrorWrapper{err.Error()}}
 	}
+
+	a.CreateLogEntry("SD", "Fetched packs successfully.")
 
 	return FetchPacksResponse{languages, scripts, nil}
 }
