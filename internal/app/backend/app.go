@@ -15,7 +15,8 @@ var version = "develop"
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx  context.Context
+	logs []string
 }
 
 // NewApp creates a new App application struct
@@ -27,6 +28,10 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	a.logs = []string{}
+
+	a.CreateLogEntry("App", fmt.Sprintf("Uplink version %s started!", version))
+	a.CreateLogEntry("DFU", fmt.Sprintf("dfu-util path is %s", config.DfuPath()))
 }
 
 // GetVersion returns the version of the application
@@ -47,7 +52,7 @@ func (a *App) CheckDfuStatus() int {
 	cmd := command.Command(dfuUtilPath, "-l")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(err)
+		a.CreateLogEntry("DFU", "dfu-util not found or not executable")
 		return 0
 	}
 

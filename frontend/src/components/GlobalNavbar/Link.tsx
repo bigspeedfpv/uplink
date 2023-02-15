@@ -7,6 +7,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { Link, useLocation } from "react-router-dom";
+import { CreateLogEntry } from "../../../wailsjs/go/backend/App";
 
 interface LinkProps {
   icon: React.ReactNode;
@@ -23,6 +24,7 @@ function NavLink(props: LinkProps) {
   return (
     <UnstyledButton
       component={Link}
+      onClick={() => CreateLogEntry("Nav", `Clicked on ${props.label}`)}
       to={props.to}
       sx={{
         display: "block",

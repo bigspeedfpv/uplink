@@ -28,6 +28,7 @@ import {
 } from "@tabler/icons";
 import ReactMarkdown from "react-markdown";
 import {
+  CreateLogEntry,
   FetchReleases,
   FetchTargets,
   FlashDfu,
@@ -77,7 +78,7 @@ function Flash() {
 
   // Fetch releases on page open
   React.useEffect(() => {
-    FetchReleases().then((r) => {
+    FetchReleases(false).then((r) => {
       setFetchedReleases(r);
       setReleasesLoaded(true);
     });
@@ -87,8 +88,6 @@ function Flash() {
   React.useEffect(() => {
     if (page === 1) {
       if (targetsLoaded) return;
-
-      console.log("Fetching targets for " + fwVersion?.value);
 
       FetchTargets(fwVersion!).then((targets: models.FetchedTargets) => {
         console.log(targets);
@@ -277,7 +276,7 @@ function Flash() {
                   <Card
                     radius="lg"
                     sx={(theme) => ({
-                      boxShadow: dfuStatus === 2 && theme.shadows.sm,
+                      boxShadow: dfuStatus === 2 ? theme.shadows.sm : "",
                       backgroundColor:
                         dfuStatus === 2
                           ? theme.fn.variant({

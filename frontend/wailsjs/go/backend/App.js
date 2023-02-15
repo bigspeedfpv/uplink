@@ -10,12 +10,16 @@ export function CheckDfuStatus() {
   return window['go']['backend']['App']['CheckDfuStatus']();
 }
 
+export function CreateLogEntry(arg1, arg2) {
+  return window['go']['backend']['App']['CreateLogEntry'](arg1, arg2);
+}
+
 export function FetchPacks() {
   return window['go']['backend']['App']['FetchPacks']();
 }
 
-export function FetchReleases() {
-  return window['go']['backend']['App']['FetchReleases']();
+export function FetchReleases(arg1) {
+  return window['go']['backend']['App']['FetchReleases'](arg1);
 }
 
 export function FetchTargets(arg1) {
@@ -24,6 +28,10 @@ export function FetchTargets(arg1) {
 
 export function FlashDfu(arg1) {
   return window['go']['backend']['App']['FlashDfu'](arg1);
+}
+
+export function GetLogs() {
+  return window['go']['backend']['App']['GetLogs']();
 }
 
 export function GetVersion() {

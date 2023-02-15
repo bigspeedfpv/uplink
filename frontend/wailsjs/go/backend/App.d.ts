@@ -7,13 +7,17 @@ export function CheckDfuAvailable():Promise<boolean>;
 
 export function CheckDfuStatus():Promise<number>;
 
+export function CreateLogEntry(arg1:string,arg2:string):Promise<void>;
+
 export function FetchPacks():Promise<backend.FetchPacksResponse>;
 
-export function FetchReleases():Promise<backend.FetchedReleases>;
+export function FetchReleases(arg1:boolean):Promise<backend.FetchedReleases>;
 
 export function FetchTargets(arg1:backend.ReleaseMeta):Promise<backend.FetchedTargets>;
 
 export function FlashDfu(arg1:string):Promise<backend.DfuFlashResponse>;
+
+export function GetLogs():Promise<Array<string>>;
 
 export function GetVersion():Promise<string>;
 

@@ -25,7 +25,7 @@ import (
 
 // FUNCTIONS
 // FetchReleases returns all releases of EdgeTX.
-func (a *App) FetchReleases() FetchedReleases {
+func (a *App) FetchReleases(enablePreRelease bool) FetchedReleases {
 	// Initialize the struct we will return
 	var fetchedReleases FetchedReleases
 	var client *github.Client
@@ -45,14 +45,20 @@ func (a *App) FetchReleases() FetchedReleases {
 
 	releases, _, err := client.Repositories.ListReleases(ctx, "EdgeTX", "edgetx", nil)
 	if err != nil {
+		a.CreateLogEntry("Flash", fmt.Sprintf("Error fetching releases: %s", err.Error()))
 		fetchedReleases.Error = &ErrorWrapper{Message: err.Error()}
 		return fetchedReleases
 	}
 
-	// Filter out pre-releases
-	releases = filter(releases, func(release *github.RepositoryRelease) bool {
-		return !*release.Prerelease
-	})
+	// Only filter prereleases if in expert mode
+	if !enablePreRelease {
+		releases = filter(releases, func(release *github.RepositoryRelease) bool {
+			return !*release.Prerelease
+		})
+	}
+
+	// Create a list of all fetched release names for the log
+	var releaseNames []string
 
 	// Populate metadata for each release
 	for idx, release := range releases {
@@ -61,6 +67,8 @@ func (a *App) FetchReleases() FetchedReleases {
 		})]
 
 		codename := strings.Split(release.GetName(), "\"")[1]
+
+		releaseNames = append(releaseNames, *release.TagName)
 
 		fetchedReleases.Releases = append(fetchedReleases.Releases, ReleaseMeta{
 			Label:              *release.Name,
@@ -73,15 +81,20 @@ func (a *App) FetchReleases() FetchedReleases {
 		})
 	}
 
+	a.CreateLogEntry("Flash", fmt.Sprintf("Fetched releases: %s", strings.Join(releaseNames, ", ")))
+
 	return fetchedReleases
 }
 
 // FetchTargets downloads the firmware artifact from the selected version, saves it, and returns the target list.
 func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
+	a.CreateLogEntry("Flash", fmt.Sprintf("Fetching targets for %s...", release.Label))
+
 	var targets FetchedTargets
 
 	resp, err := http.Get(release.BrowserDownloadUrl)
 	if err != nil {
+		a.CreateLogEntry("Flash", fmt.Sprintf("Error fetching targets: %s", err.Error()))
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
 	}
@@ -90,6 +103,7 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 	// Write response body to firmware.zip
 	fwZip, err := os.Create(config.DefaultDir() + "/firmware.zip")
 	if err != nil {
+		a.CreateLogEntry("Flash", fmt.Sprintf("Error creating firmware.zip: %s", err.Error()))
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
 	}
@@ -99,6 +113,7 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 	// ...and read BACK from the zip
 	read, err := zip.OpenReader(config.DefaultDir() + "/firmware.zip")
 	if err != nil {
+		a.CreateLogEntry("Flash", fmt.Sprintf("Error reading firmware.zip: %s", err.Error()))
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
 	}
@@ -108,20 +123,25 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 		if file.Name == "fw.json" {
 			fwIdx, err := file.Open()
 			if err != nil {
+				a.CreateLogEntry("Flash", fmt.Sprintf("Error opening fw.json: %s", err.Error()))
 				targets.Error = &ErrorWrapper{Message: err.Error()}
 				return targets
 			}
 
 			fwIdxRead, err := io.ReadAll(fwIdx)
 			if err != nil {
+				a.CreateLogEntry("Flash", fmt.Sprintf("Error reading fw.json: %s", err.Error()))
 				targets.Error = &ErrorWrapper{Message: err.Error()}
 			}
 
 			var fetchedTargetList targetsMeta
+			var fetchedPrefixes []string
 
 			json.Unmarshal(fwIdxRead, &fetchedTargetList)
 
 			for _, target := range fetchedTargetList.Targets {
+				fetchedPrefixes = append(fetchedPrefixes, target[1])
+
 				targets.Targets = append(targets.Targets, Target{
 					Label:  target[0],
 					Value:  target[0],
@@ -129,12 +149,15 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 				})
 			}
 
+			a.CreateLogEntry("Flash", fmt.Sprintf("Fetched targets: %s", strings.Join(fetchedPrefixes, ", ")))
+
 			targets.Changelog = fetchedTargetList.Changelog
 
 			return targets
 		}
 	}
 
+	a.CreateLogEntry("Flash", "Could not find fw.json in firmware artifact")
 	targets.Error = &ErrorWrapper{Message: "Could not find fw.json in firmware artifact"}
 	return targets
 }
@@ -156,6 +179,7 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 
 	err := copyFirmwareToFile(prefix, config.DefaultDir()+"/firmware.bin")
 	if err != nil {
+		a.CreateLogEntry("Flash", "Failed to extract firmware file for flashing.")
 		return DfuFlashResponse{
 			Success: false,
 			Output:  "Failed to extract firmware file for flashing.",
@@ -170,25 +194,27 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 	go func() {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			a.CreateLogEntry("DFU", scanner.Text())
 		}
 	}()
 
 	go func() {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			a.CreateLogEntry("DFU Error", scanner.Text())
 		}
 	}()
 
 	err = cmd.Wait()
 	if err != nil {
+		a.CreateLogEntry("DFU", fmt.Sprintf("Failed to flash firmware: %s", err.Error()))
 		return DfuFlashResponse{
 			Success: false,
 			Output:  err.Error(),
 		}
 	}
 
+	a.CreateLogEntry("DFU", "Firmware flashed successfully.")
 	return DfuFlashResponse{
 		Success: true,
 		Output:  "",
@@ -206,6 +232,7 @@ func (a *App) SaveFirmware(prefix string) SaveFirmwareStatus {
 		TreatPackagesAsDirectories: false,
 	})
 	if err != nil {
+		a.CreateLogEntry("Flash", fmt.Sprintf("Error opening save dialog: %s", err.Error()))
 		return SaveFirmwareStatus{
 			Status: 1,
 			Path:   "",
@@ -213,6 +240,7 @@ func (a *App) SaveFirmware(prefix string) SaveFirmwareStatus {
 	}
 
 	if location == "" {
+		a.CreateLogEntry("Flash", "No location selected.")
 		return SaveFirmwareStatus{
 			Status: 2,
 			Path:   "",
@@ -221,11 +249,14 @@ func (a *App) SaveFirmware(prefix string) SaveFirmwareStatus {
 
 	err = copyFirmwareToFile(prefix, location)
 	if err != nil {
+		a.CreateLogEntry("Flash", fmt.Sprintf("Failed to copy firmware to file: %s", err.Error()))
 		return SaveFirmwareStatus{
 			Status: 1,
 			Path:   "",
 		}
 	}
+
+	a.CreateLogEntry("Flash", fmt.Sprintf("Firmware saved to %s", location))
 	return SaveFirmwareStatus{
 		Status: 0,
 		Path:   location,
