@@ -19,7 +19,7 @@ func (a *App) FetchPacks() FetchPacksResponse {
 		return FetchPacksResponse{nil, nil, &ErrorWrapper{err.Error()}}
 	}
 
-	getAndUnmarshalTo("https://github.com/EdgeTX/lua-scripts/releases/download/latest/scripts.json", &scripts)
+	err = getAndUnmarshalTo("https://github.com/EdgeTX/lua-scripts/releases/download/latest/scripts.json", &scripts)
 	if err != nil {
 		a.CreateLogEntry("SD", "Error fetching scripts: "+err.Error())
 		return FetchPacksResponse{nil, nil, &ErrorWrapper{err.Error()}}
