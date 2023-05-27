@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 
 	"bigspeed.me/uplink/internal/pkg/command"
@@ -23,7 +22,6 @@ import (
 	wails "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// FUNCTIONS
 // FetchReleases returns all releases of EdgeTX.
 func (a *App) FetchReleases(enablePreRelease bool) FetchedReleases {
 	// Initialize the struct we will return
@@ -62,6 +60,7 @@ func (a *App) FetchReleases(enablePreRelease bool) FetchedReleases {
 
 	// Populate metadata for each release
 	for idx, release := range releases {
+		// slices.IndexFunc finds the first element that matches the predicate. We're looking for firmware assets specifically
 		fwAsset := release.Assets[slices.IndexFunc(release.Assets, func(asset github.ReleaseAsset) bool {
 			return strings.Contains(asset.GetName(), "edgetx-firmware")
 		})]
@@ -98,7 +97,12 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 
 	// Write response body to firmware.zip
 	fwZip, err := os.Create(config.DefaultDir() + "/firmware.zip")
@@ -107,8 +111,17 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 		targets.Error = &ErrorWrapper{Message: err.Error()}
 		return targets
 	}
-	defer fwZip.Close()
-	io.Copy(fwZip, resp.Body)
+	defer func(fwZip *os.File) {
+		err := fwZip.Close()
+		if err != nil {
+
+		}
+	}(fwZip)
+
+	_, err = io.Copy(fwZip, resp.Body)
+	if err != nil {
+		return FetchedTargets{}
+	}
 
 	// ...and read BACK from the zip
 	read, err := zip.OpenReader(config.DefaultDir() + "/firmware.zip")
@@ -137,7 +150,10 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 			var fetchedTargetList targetsMeta
 			var fetchedPrefixes []string
 
-			json.Unmarshal(fwIdxRead, &fetchedTargetList)
+			err = json.Unmarshal(fwIdxRead, &fetchedTargetList)
+			if err != nil {
+				return FetchedTargets{}
+			}
 
 			for _, target := range fetchedTargetList.Targets {
 				fetchedPrefixes = append(fetchedPrefixes, target[1])
@@ -164,17 +180,17 @@ func (a *App) FetchTargets(release ReleaseMeta) FetchedTargets {
 
 // CheckDfuAvailable returns a boolean representing the aviailability of dfu-util.
 func (a *App) CheckDfuAvailable() bool {
-	_, err := exec.LookPath("dfu-util")
+	_, err := exec.LookPath(config.DfuPath())
 
-	return (runtime.GOOS == "windows" && runtime.GOARCH == "amd64") ||
-		(runtime.GOOS == "linux" && runtime.GOARCH == "amd64") ||
-		(runtime.GOOS == "darwin") ||
-		(err == nil)
+	return err == nil
 }
 
 // FlashDfu flashes the connected radio with the firmware with the given prefix.
 // DFU availability already verified with CheckDfuAvailable.
 func (a *App) FlashDfu(prefix string) DfuFlashResponse {
+	// reset DFU output for the UI
+	a.dfuOutput = []string{}
+
 	dfuUtilPath := config.DfuPath()
 
 	err := copyFirmwareToFile(prefix, config.DefaultDir()+"/firmware.bin")
@@ -186,13 +202,28 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 		}
 	}
 
-	cmd := command.Command(dfuUtilPath, "-a", "0", "--dfuse-address", "0x08000000", "--device", "0483:df11", "-D", config.DefaultDir()+"/firmware.bin")
+	dfuArgs := []string{
+		"-a",
+		"0",
+		"--dfuse-address",
+		"0x08000000",
+		"--device",
+		"0483:df11",
+		"-D",
+		config.DefaultDir() + "/firmware.bin",
+	}
+
+	cmd := command.Command(dfuUtilPath, dfuArgs...)
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
-	cmd.Start()
+	err = cmd.Start()
+	if err != nil {
+		return DfuFlashResponse{}
+	}
 
 	go func() {
 		scanner := bufio.NewScanner(stdout)
+        scanner.Split(ScanCRLF)
 		for scanner.Scan() {
 			a.CreateLogEntry("DFU", scanner.Text())
 		}
@@ -200,6 +231,7 @@ func (a *App) FlashDfu(prefix string) DfuFlashResponse {
 
 	go func() {
 		scanner := bufio.NewScanner(stderr)
+        scanner.Split(ScanCRLF)
 		for scanner.Scan() {
 			a.CreateLogEntry("DFU Error", scanner.Text())
 		}
@@ -286,14 +318,14 @@ type ReleaseMeta struct {
 	Latest             bool   `json:"latest"`
 }
 
-// fetchedTargets is an internal representation of the list of targets and corresponding filenames.
+// FetchedTargets is an internal representation of the list of targets and corresponding filenames.
 type FetchedTargets struct {
 	Error     *ErrorWrapper `json:"error,omitempty"`
 	Targets   []Target      `json:"targets"`
 	Changelog string        `json:"changelog"`
 }
 
-// target holds metadata for one target.
+// Target holds metadata for one target.
 type Target struct {
 	Label  string `json:"label"` // Radio name
 	Value  string `json:"value"`
@@ -330,7 +362,12 @@ func copyFirmwareToFile(prefix string, location string) error {
 	if err != nil {
 		return err
 	}
-	defer read.Close()
+	defer func(read *zip.ReadCloser) {
+		err := read.Close()
+		if err != nil {
+
+		}
+	}(read)
 
 	// Loop through each file to find the correct target
 	var firmwareFile *zip.File
@@ -347,14 +384,24 @@ func copyFirmwareToFile(prefix string, location string) error {
 	if err != nil {
 		return err
 	}
-	defer firmware.Close()
+	defer func(firmware io.ReadCloser) {
+		err := firmware.Close()
+		if err != nil {
+
+		}
+	}(firmware)
 
 	// Create bin for flashing
 	bin, err := os.Create(location)
 	if err != nil {
 		return err
 	}
-	defer bin.Close()
+	defer func(bin *os.File) {
+		err := bin.Close()
+		if err != nil {
+
+		}
+	}(bin)
 
 	_, err = io.Copy(bin, firmware)
 	if err != nil {

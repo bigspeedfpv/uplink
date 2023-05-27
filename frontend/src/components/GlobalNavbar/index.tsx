@@ -57,7 +57,7 @@ function GlobalNavbar() {
               key={link.label}
               icon={link.icon}
               color={link.color}
-              label={link.color}
+              label={link.label}
               to={link.to}
             />
           ))}

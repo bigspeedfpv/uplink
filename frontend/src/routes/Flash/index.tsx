@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Badge,
   Button,
@@ -32,6 +32,7 @@ import {
   FetchReleases,
   FetchTargets,
   FlashDfu,
+  GetDFULogs,
   SaveFirmware,
 } from "../../../wailsjs/go/backend/App";
 import { backend as models } from "../../../wailsjs/go/models";
@@ -58,6 +59,8 @@ function Flash() {
     React.useState<models.DfuFlashResponse>();
 
   const [flashing, setFlashing] = React.useState(false);
+  const [dfuOutput, setDfuOutput] = React.useState<string[]>();
+  const dfuOutputRef = useRef<HTMLDivElement>(null);
 
   const dfuStatus = useSelector((state: RootState) => state.connection.value);
 
@@ -94,6 +97,20 @@ function Flash() {
       });
     }
   }, [page]);
+
+  // update DFU status every second while flashing
+  React.useEffect(() => {
+    if (!flashing) return undefined; // explicit return for concrete return type
+
+    const interval = setInterval(() => {
+      GetDFULogs().then((logs) => {
+        setDfuOutput(logs);
+        dfuOutputRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    }, 1000); // dfu-util updates once per second
+
+    return () => clearInterval(interval);
+  }, [flashing]);
 
   const fetchReleaseByName = (tag: string | null) => {
     setTargetsLoaded(false); // Changing release invalidates targets
@@ -334,7 +351,8 @@ function Flash() {
 
             {dfuStatus !== 2 && (
               <>
-                <Group spacing={4} position="center">
+                {/* padding hack to keep the text just below the buttons */}
+                <Group spacing={4} mt="-3.5rem" position="center">
                   <IconInfoCircle
                     size={20}
                     color={
@@ -380,6 +398,7 @@ function Flash() {
             </Text>
           </Stepper.Completed>
         </Stepper>
+
         <Button.Group w="100%">
           <Button
             variant="default"
@@ -404,18 +423,26 @@ function Flash() {
         onClose={() => {}}
         transitionDuration={300}
         radius="md"
+        size="auto"
       >
-        <Stack p="md" align="center">
+        <Stack p="md" align="center" spacing="xs">
           <Group>
             <Loader />
             <Text size={36} weight="bold">
               Flashing...
             </Text>
           </Group>
-          <Text size="lg" align="center">
-            This may take a while; we&apos;ll let you know when it&apos;s done.{" "}
-            <strong>Do not unplug your radio or close Uplink!</strong>
-          </Text>
+          <Text>This will take several minutes. Please do not close Uplink.</Text>
+          <Card h={250} sx={{ overflowY: "auto" }}>
+          {dfuOutput?.map(m => (
+            <Text key={m}>
+            <pre style={{ margin: 0 }}>
+              { m }
+              </pre>
+            </Text>
+            ))}
+            <div ref={dfuOutputRef} />
+          </Card>
         </Stack>
       </Modal>
     </>

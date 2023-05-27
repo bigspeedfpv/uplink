@@ -30,6 +30,10 @@ export function FlashDfu(arg1) {
   return window['go']['backend']['App']['FlashDfu'](arg1);
 }
 
+export function GetDFULogs() {
+  return window['go']['backend']['App']['GetDFULogs']();
+}
+
 export function GetLogs() {
   return window['go']['backend']['App']['GetLogs']();
 }

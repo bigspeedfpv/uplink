@@ -17,6 +17,8 @@ export function FetchTargets(arg1:backend.ReleaseMeta):Promise<backend.FetchedTa
 
 export function FlashDfu(arg1:string):Promise<backend.DfuFlashResponse>;
 
+export function GetDFULogs():Promise<Array<string>>;
+
 export function GetLogs():Promise<Array<string>>;
 
 export function GetVersion():Promise<string>;

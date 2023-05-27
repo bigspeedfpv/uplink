@@ -15,8 +15,9 @@ var version = "develop"
 
 // App struct
 type App struct {
-	ctx  context.Context
-	logs []string
+	ctx       context.Context
+	dfuOutput []string
+	logs      []string
 }
 
 // NewApp creates a new App application struct
