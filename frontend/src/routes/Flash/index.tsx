@@ -432,14 +432,14 @@ function Flash() {
               Flashing...
             </Text>
           </Group>
-          <Text>This will take several minutes. Please do not close Uplink.</Text>
+          <Text>
+            This will take several minutes. Please do not close Uplink.
+          </Text>
           <Card h={250} sx={{ overflowY: "auto" }}>
-          {dfuOutput?.map(m => (
-            <Text key={m}>
-            <pre style={{ margin: 0 }}>
-              { m }
-              </pre>
-            </Text>
+            {dfuOutput?.map((m) => (
+              <Text key={m}>
+                <pre style={{ margin: 0 }}>{m}</pre>
+              </Text>
             ))}
             <div ref={dfuOutputRef} />
           </Card>
